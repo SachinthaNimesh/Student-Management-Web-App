@@ -20,7 +20,7 @@ const Welcome = () => {
 
     const timer = setTimeout(() => {
       navigate("/checkin"); // Use navigate instead of window.location.href
-    }, 20000); // 2 seconds delay
+    }, 2000); // 2 seconds delay
 
     return () => clearTimeout(timer);
   }, [navigate]); // Added navigate to dependency array
@@ -30,10 +30,13 @@ const Welcome = () => {
   }
 
   return (
-    <div style={styles.container}>
-      <h1 style={styles.title}>Worky</h1>
-      <p style={styles.subtitle}>Welcome!</p>
-    </div>
+    <>
+      <div style={styles.container}>
+        <h1 style={styles.title}>Worky</h1>
+
+        <p style={styles.subtitle}>Welcome!</p>
+      </div>
+    </>
   );
 };
 
@@ -42,8 +45,16 @@ const styles = {
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
-    height: "100vh",
     backgroundColor: "#0052A5",
+    width: "90vw", // Responsive width
+    maxWidth: "414px", // Max width for larger phones
+    height: "90vh", // Responsive height
+    maxHeight: "896px", // Max height for larger phones
+    position: "absolute" as const,
+    top: "50%",
+    left: "50%",
+    transform: "translate(-50%, -50%)",
+    flexDirection: "column" as const,
   },
   title: {
     fontSize: "90px",

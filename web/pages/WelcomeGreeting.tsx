@@ -1,21 +1,55 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 const WelcomeGreeting: React.FC = () => {
   const navigate = useNavigate();
+  const [welcomeText, setWelcomeText] = useState("");
 
-  const handleNavigate = () => {
-    navigate("/Emotions");
-  };
+  useEffect(() => {
+    const messages = [
+      "Let’s do this! 💪",
+      "Good morning! 😊",
+      "We can do it! 👍",
+      "Stay happy! 🌈",
+      "You are great! 🌟",
+      "Today will be good! 😊",
+      "Keep smiling! 😄",
+      "Be your best! 🌞",
+    ];
+    const randomMessage = messages[Math.floor(Math.random() * messages.length)];
+    setWelcomeText(randomMessage);
+
+    const timer = setTimeout(() => {
+      navigate("/emotions");
+    }, 2000); // 3 second delay
+
+    return () => clearTimeout(timer);
+  }, [navigate]);
 
   return (
-    <div className="flex justify-center items-center h-screen bg-gray-100">
-      <button
-        onClick={handleNavigate}
-        className="px-6 py-3 bg-blue-500 text-white font-semibold rounded-lg shadow-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75"
+    <div className="flex flex-col h-screen">
+      <div
+        style={{
+          padding: "15px",
+          backgroundColor: "rgba(255, 255, 255, 0.6)",
+          width: "calc(100% - 60px)",
+          paddingTop: "30px",
+          paddingBottom: "45px",
+          borderRadius: "18px",
+          margin: "auto",
+        }}
       >
-        Go to Emotions Page
-      </button>
+        <p
+          style={{
+            color: "#000",
+            fontSize: "48px",
+            fontFamily: "'Poppins', sans-serif",
+            textAlign: "center",
+          }}
+        >
+          {welcomeText}
+        </p>
+      </div>
     </div>
   );
 };

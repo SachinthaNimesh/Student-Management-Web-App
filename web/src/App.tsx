@@ -60,12 +60,13 @@ function App() {
           path="/welcome-greeting"
           element={
             <PaperWrapper>
+              <Header />
               <WelcomeGreeting />
             </PaperWrapper>
           }
         />
         <Route
-          path="/emotion"
+          path="/emotions"
           element={
             <PaperWrapper>
               <Emotion />
