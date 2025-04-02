@@ -6,7 +6,8 @@ import WelcomeGreeting from "../pages/WelcomeGreeting"; // Import WelcomeGreetin
 import Emotion from "../pages/Emotion"; // Import Emotion
 import CheckOutScreen from "../pages/CheckOutScreen"; // Import CheckOutScreen
 import Welcome from "../pages/Welcome"; // Import Welcome
-
+import Feedback from "../pages/Feedback"; // Import Feedback
+import CheckOutGreeting from "../pages/CheckOutGreeting"; // Import CheckOutGreeting
 function PaperWrapper({ children }: { children: React.ReactNode }) {
   return (
     <div
@@ -69,6 +70,7 @@ function App() {
           path="/emotions"
           element={
             <PaperWrapper>
+              <Header />
               <Emotion />
             </PaperWrapper>
           }
@@ -77,7 +79,26 @@ function App() {
           path="/checkout"
           element={
             <PaperWrapper>
+              <Header />
               <CheckOutScreen />
+            </PaperWrapper>
+          }
+        />
+        <Route
+          path="/feedback"
+          element={
+            <PaperWrapper>
+              <Header />
+              <Feedback />
+            </PaperWrapper>
+          }
+        />
+        <Route
+          path="/checkout-greeting"
+          element={
+            <PaperWrapper>
+              <Header />
+              <CheckOutGreeting />
             </PaperWrapper>
           }
         />

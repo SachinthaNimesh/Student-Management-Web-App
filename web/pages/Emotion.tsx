@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import Header from "../components/Header";
 import { useMoodService } from "../api/moodService";
 import { postCheckoutById } from "../api/attendanceService";
 import { CSSProperties } from "react";
@@ -48,7 +47,6 @@ const Emotion = () => {
 
   return (
     <>
-      <Header />
       <div
         style={{
           padding: "10px",
@@ -58,7 +56,7 @@ const Emotion = () => {
           textAlign: "center",
         }}
       >
-        <p style={styles.question} onClick={() => navigate("/checkout-screen")}>
+        <p style={styles.question} onClick={() => navigate("/checkout")}>
           How are you feeling Now?
         </p>
         <button

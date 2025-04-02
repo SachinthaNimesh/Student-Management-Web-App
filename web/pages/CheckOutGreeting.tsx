@@ -1,50 +1,56 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const CheckOutGreeting: React.FC = () => {
+  const navigate = useNavigate();
+  const [welcomeText, setWelcomeText] = useState("");
+
+  useEffect(() => {
+    const messages = [
+      "Great job today! 🎉",
+      "Enjoy your time off! 🌟",
+      "Relax and recharge! 🌈",
+      "See you next time! 👋",
+      "Take care! 🌞",
+      "Have a wonderful evening! 🌙",
+      "Thanks for your hard work! 👍",
+    ];
+    const randomMessage = messages[Math.floor(Math.random() * messages.length)];
+    setWelcomeText(randomMessage);
+
+    const timer = setTimeout(() => {
+      navigate("/"); // Updated navigation path to "/checkout"
+    }, 3000); // 3 second delay
+
+    return () => clearTimeout(timer);
+  }, [navigate]);
+
   return (
-    <div className="container">
-      <h1 className="title">Thank You for Your Purchase!</h1>
-      <p className="message">
-        We appreciate your business. If you have any questions, please email us
-        at support@example.com.
-      </p>
+    <div className="flex flex-col h-screen">
+      <div
+        style={{
+          padding: "15px",
+          backgroundColor: "rgba(255, 255, 255, 0.6)",
+          width: "calc(100% - 60px)",
+          paddingTop: "30px",
+          paddingBottom: "45px",
+          borderRadius: "18px",
+          margin: "auto",
+        }}
+      >
+        <p
+          style={{
+            color: "#000",
+            fontSize: "48px",
+            fontFamily: "'Poppins', sans-serif",
+            textAlign: "center",
+          }}
+        >
+          {welcomeText} {/* Retained dynamic welcome text */}
+        </p>
+      </div>
     </div>
   );
 };
 
 export default CheckOutGreeting;
-
-// Add the following CSS in your global styles or a CSS module
-/*
-.container {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
-  padding: 20px;
-  text-align: center;
-  background-color: #f9f9f9;
-}
-
-.title {
-  font-size: 2rem;
-  margin-bottom: 1rem;
-  color: #333;
-}
-
-.message {
-  font-size: 1rem;
-  color: #555;
-}
-
-@media (max-width: 768px) {
-  .title {
-    font-size: 1.5rem;
-  }
-
-  .message {
-    font-size: 0.9rem;
-  }
-}
-*/
