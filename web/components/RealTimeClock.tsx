@@ -13,7 +13,11 @@ const RealTimeClock = () => {
 
   function getCurrentDateTime() {
     const now = new Date();
-    const options = { hour: "numeric", minute: "2-digit", hour12: true };
+    const options: Intl.DateTimeFormatOptions = {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    };
     const time = now.toLocaleTimeString("en-US", options);
 
     const day = now.getDate();

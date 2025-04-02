@@ -1,4 +1,3 @@
-import React from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useMoodService } from "../api/moodService";
 import { CSSProperties } from "react";
