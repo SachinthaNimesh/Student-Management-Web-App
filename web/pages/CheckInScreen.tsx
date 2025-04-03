@@ -209,7 +209,7 @@ const styles: { [key: string]: CSSProperties } = {
   checkInText: {
     fontSize: "4.5vh",
     marginLeft: "2vh",
-    marginTop: "-35vh",
+    marginTop: "-32vh",
     color: "#000",
     fontWeight: "600",
     position: "fixed" as const,
