@@ -20,7 +20,7 @@ function PaperWrapper({ children }: { children: React.ReactNode }) {
     >
       <Paper
         style={{
-          backgroundImage: "url(assets/bg2.jpg)",
+          backgroundImage: "url(public/bg2.jpg)",
           backgroundSize: "cover",
           backgroundPosition: "center",
           width: "90vw", // Responsive width

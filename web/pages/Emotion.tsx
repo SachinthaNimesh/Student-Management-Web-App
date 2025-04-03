@@ -65,7 +65,7 @@ const Emotion = () => {
         >
           <div style={styles.btnContent}>
             <img
-              src="/assets/happy.png"
+              src="/public/happy.png"
               alt="Happy"
               style={{
                 width: "54px",
@@ -81,7 +81,7 @@ const Emotion = () => {
         >
           <div style={styles.btnContent}>
             <img
-              src="/assets/neutral.png"
+              src="/public/neutral.png"
               alt="Neutral"
               style={{
                 width: "54px",
@@ -97,7 +97,7 @@ const Emotion = () => {
         >
           <div style={styles.btnContent}>
             <img
-              src="/assets/sad.png"
+              src="/public/sad.png"
               alt="Sad"
               style={{
                 width: "54px",
@@ -121,7 +121,7 @@ const Emotion = () => {
           gap: "25px",
         }}
       >
-        <img src="/assets/checkout.png" alt="Checkout" style={styles.image} />
+        <img src="/public/checkout.png" alt="Checkout" style={styles.image} />
         <button
           style={{
             padding: "13.31px 26.62px",

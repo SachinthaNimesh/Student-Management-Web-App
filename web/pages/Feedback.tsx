@@ -25,7 +25,7 @@ const Feedback = () => {
       <p style={styles.question}>How was your day at work?</p>
       <button style={styles.btn} onClick={() => handleMoodPress("happy", true)}>
         <div style={styles.btnContent}>
-          <img src="/assets/happy.png" alt="Happy" style={styles.image} />
+          <img src="/public/happy.png" alt="Happy" style={styles.image} />
           <span style={styles.text}>Happy</span>
         </div>
       </button>
@@ -34,13 +34,13 @@ const Feedback = () => {
         onClick={() => handleMoodPress("neutral", true)}
       >
         <div style={styles.btnContent}>
-          <img src="/assets/neutral.png" alt="Neutral" style={styles.image} />
+          <img src="/public/neutral.png" alt="Neutral" style={styles.image} />
           <span style={styles.text}>Neutral</span>
         </div>
       </button>
       <button style={styles.btn} onClick={() => handleMoodPress("sad", true)}>
         <div style={styles.btnContent}>
-          <img src="/assets/sad.png" alt="Sad" style={styles.image} />
+          <img src="/public/sad.png" alt="Sad" style={styles.image} />
           <span style={styles.text}>Sad</span>
         </div>
       </button>
