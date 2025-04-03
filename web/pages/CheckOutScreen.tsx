@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { postCheckoutById } from "../api/attendanceService";
-import checkoutImage from "../public/checkout.png";
+import checkoutImage from "../assets/checkout.png";
 
 const styles = {
   flexBox: {

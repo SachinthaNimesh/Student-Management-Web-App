@@ -1,6 +1,9 @@
 import { useNavigate, useLocation } from "react-router-dom";
 import { useMoodService } from "../api/moodService";
 import { CSSProperties } from "react";
+import happyImage from "../assets/happy.png";
+import neutralImage from "../assets/neutral.png";
+import sadImage from "../assets/sad.png";
 
 const Feedback = () => {
   const navigate = useNavigate();
@@ -25,7 +28,7 @@ const Feedback = () => {
       <p style={styles.question}>How was your day at work?</p>
       <button style={styles.btn} onClick={() => handleMoodPress("happy", true)}>
         <div style={styles.btnContent}>
-          <img src="/public/happy.png" alt="Happy" style={styles.image} />
+          <img src={happyImage} alt="Happy" style={styles.image} />
           <span style={styles.text}>Happy</span>
         </div>
       </button>
@@ -34,13 +37,13 @@ const Feedback = () => {
         onClick={() => handleMoodPress("neutral", true)}
       >
         <div style={styles.btnContent}>
-          <img src="/public/neutral.png" alt="Neutral" style={styles.image} />
+          <img src={neutralImage} alt="Neutral" style={styles.image} />
           <span style={styles.text}>Neutral</span>
         </div>
       </button>
       <button style={styles.btn} onClick={() => handleMoodPress("sad", true)}>
         <div style={styles.btnContent}>
-          <img src="/public/sad.png" alt="Sad" style={styles.image} />
+          <img src={sadImage} alt="Sad" style={styles.image} />
           <span style={styles.text}>Sad</span>
         </div>
       </button>

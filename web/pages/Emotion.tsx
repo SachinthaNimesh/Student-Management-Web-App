@@ -3,6 +3,10 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useMoodService } from "../api/moodService";
 import { postCheckoutById } from "../api/attendanceService";
 import { CSSProperties } from "react";
+import HappyImage from "../assets/happy.png";
+import NeutralImage from "../assets/neutral.png";
+import SadImage from "../assets/sad.png";
+import CheckoutImage from "../assets/checkout.png";
 
 const Emotion = () => {
   const [loading, setLoading] = useState(false);
@@ -65,7 +69,7 @@ const Emotion = () => {
         >
           <div style={styles.btnContent}>
             <img
-              src="/public/happy.png"
+              src={HappyImage}
               alt="Happy"
               style={{
                 width: "54px",
@@ -81,7 +85,7 @@ const Emotion = () => {
         >
           <div style={styles.btnContent}>
             <img
-              src="/public/neutral.png"
+              src={NeutralImage}
               alt="Neutral"
               style={{
                 width: "54px",
@@ -97,7 +101,7 @@ const Emotion = () => {
         >
           <div style={styles.btnContent}>
             <img
-              src="/public/sad.png"
+              src={SadImage}
               alt="Sad"
               style={{
                 width: "54px",
@@ -121,7 +125,7 @@ const Emotion = () => {
           gap: "25px",
         }}
       >
-        <img src="/public/checkout.png" alt="Checkout" style={styles.image} />
+        <img src={CheckoutImage} alt="Checkout" style={styles.image} />
         <button
           style={{
             padding: "13.31px 26.62px",

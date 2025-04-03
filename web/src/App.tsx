@@ -8,6 +8,7 @@ import CheckOutScreen from "../pages/CheckOutScreen"; // Import CheckOutScreen
 import Welcome from "../pages/Welcome"; // Import Welcome
 import Feedback from "../pages/Feedback"; // Import Feedback
 import CheckOutGreeting from "../pages/CheckOutGreeting"; // Import CheckOutGreeting
+import BackgroundImage from "../assets/bg2.jpg"; // Import background image
 function PaperWrapper({ children }: { children: React.ReactNode }) {
   return (
     <div
@@ -20,7 +21,7 @@ function PaperWrapper({ children }: { children: React.ReactNode }) {
     >
       <Paper
         style={{
-          backgroundImage: "url(public/bg2.jpg)",
+          backgroundImage: `url(${BackgroundImage})`,
           backgroundSize: "cover",
           backgroundPosition: "center",
           width: "90vw", // Responsive width
