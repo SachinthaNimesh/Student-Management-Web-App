@@ -17,10 +17,10 @@ const CheckInScreen = () => {
   const navigate = useNavigate();
 
   // Set the API key for react-geocode
-  const googleGeoApiKey = import.meta.env.VITE_GOOGLE_GEO_API_KEY || ""; // Use Vite's import.meta.env
+  const googleGeoApiKey = process.env.CHOREO_GOOGLE_GEO_API_KEY || ""; // Use Choreo's environment variable
   if (!googleGeoApiKey) {
     console.error(
-      "Google Geo API Key is not defined. Please set it in your environment configuration."
+      "Google Geo API Key is not defined. Please set it in your Choreo environment configuration."
     );
   }
   Geocode.setKey(googleGeoApiKey);
