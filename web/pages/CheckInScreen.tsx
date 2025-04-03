@@ -18,7 +18,6 @@ const CheckInScreen = () => {
 
   // Set the API key for react-geocode
   const googleGeoApiKey = import.meta.env.VITE_GOOGLE_GEO_API_KEY || ""; // Use Vite's import.meta.env
-  console.log("Google Geo API Key:", googleGeoApiKey);
   if (!googleGeoApiKey) {
     console.error(
       "Google Geo API Key is not defined. Please set it in your environment configuration."
