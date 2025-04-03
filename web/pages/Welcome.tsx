@@ -20,7 +20,7 @@ const Welcome = () => {
 
     const timer = setTimeout(() => {
       navigate("/checkin"); // Use navigate instead of window.location.href
-    }, 2000); // 2 seconds delay
+    }, 3000); // 2 seconds delay
 
     return () => clearTimeout(timer);
   }, [navigate]); // Added navigate to dependency array

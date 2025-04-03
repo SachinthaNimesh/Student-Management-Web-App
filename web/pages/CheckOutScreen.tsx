@@ -35,6 +35,7 @@ const styles = {
     alignItems: "center",
     justifyContent: "center",
     cursor: "pointer",
+    outline: "none",
   },
   btnDisabled: {
     cursor: "not-allowed",
@@ -66,7 +67,18 @@ const CheckOutScreen: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleCheckOut = async () => {
+  const handleButtonAnimation = (
+    event: React.MouseEvent<HTMLButtonElement>
+  ) => {
+    const button = event.currentTarget;
+    button.style.transform = "scale(0.95)";
+    setTimeout(() => {
+      button.style.transform = "scale(1)";
+    }, 150);
+  };
+
+  const handleCheckOut = async (event: React.MouseEvent<HTMLButtonElement>) => {
+    handleButtonAnimation(event);
     try {
       setLoading(true);
 

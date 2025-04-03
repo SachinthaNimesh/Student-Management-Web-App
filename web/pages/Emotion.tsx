@@ -7,7 +7,7 @@ import HappyImage from "../assets/happy.png";
 import NeutralImage from "../assets/neutral.png";
 import SadImage from "../assets/sad.png";
 import CheckoutImage from "../assets/checkout.png";
-
+import React from "react";
 const Emotion = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -49,6 +49,16 @@ const Emotion = () => {
     }
   };
 
+  const handleButtonAnimation = (
+    event: React.MouseEvent<HTMLButtonElement>
+  ) => {
+    const button = event.currentTarget;
+    button.style.transform = "scale(0.95)";
+    setTimeout(() => {
+      button.style.transform = "scale(1)";
+    }, 150);
+  };
+
   return (
     <>
       <div
@@ -65,7 +75,10 @@ const Emotion = () => {
         </p>
         <button
           style={styles.btn}
-          onClick={() => handleMoodPress("happy", false)}
+          onClick={(e) => {
+            handleButtonAnimation(e);
+            handleMoodPress("happy", false);
+          }}
         >
           <div style={styles.btnContent}>
             <img
@@ -81,7 +94,10 @@ const Emotion = () => {
         </button>
         <button
           style={styles.btn}
-          onClick={() => handleMoodPress("neutral", false)}
+          onClick={(e) => {
+            handleButtonAnimation(e);
+            handleMoodPress("neutral", false);
+          }}
         >
           <div style={styles.btnContent}>
             <img
@@ -97,7 +113,10 @@ const Emotion = () => {
         </button>
         <button
           style={styles.btn}
-          onClick={() => handleMoodPress("sad", false)}
+          onClick={(e) => {
+            handleButtonAnimation(e);
+            handleMoodPress("sad", false);
+          }}
         >
           <div style={styles.btnContent}>
             <img
@@ -115,29 +134,27 @@ const Emotion = () => {
       <div
         style={{
           backgroundColor: "rgba(255, 255, 255, 0.6)",
-          width: "calc(100% - 60px)",
-          height: "100px",
+          width: "calc(100% - 6vh)",
+          height: "10vh",
           borderRadius: "18px",
           display: "flex",
           alignItems: "center",
           marginTop: "20px",
           justifyContent: "center",
-          gap: "25px",
+          gap: "2vh",
+          padding: "2.5vh",
         }}
       >
         <img src={CheckoutImage} alt="Checkout" style={styles.image} />
         <button
           style={{
+            ...styles.btn,
             padding: "13.31px 26.62px",
-            backgroundColor: "#fbff00",
-            borderRadius: "13.31px",
-            border: "1px solid rgba(0, 0, 0, .2)",
-            boxShadow: "0px 4px 4px rgba(146, 23, 23, 0.25)",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
           }}
-          onClick={handleCheckOut}
+          onClick={(e) => {
+            handleButtonAnimation(e);
+            handleCheckOut();
+          }}
           disabled={loading}
         >
           {loading ? (
@@ -150,6 +167,7 @@ const Emotion = () => {
                   color: "#000",
                   textAlign: "center",
                   fontFamily: "Poppins, sans-serif",
+                  outline: "none",
                 } as CSSProperties
               }
             >
@@ -176,6 +194,8 @@ const styles: Record<string, CSSProperties> = {
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
+    outline: "none",
+    transition: "transform 0.15s ease-in-out", // Added transition for smooth animation
   },
   image: {
     width: "55px",

@@ -1,9 +1,11 @@
+import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useMoodService } from "../api/moodService";
 import { CSSProperties } from "react";
 import happyImage from "../assets/happy.png";
 import neutralImage from "../assets/neutral.png";
 import sadImage from "../assets/sad.png";
+import React from "react";
 
 const Feedback = () => {
   const navigate = useNavigate();
@@ -11,13 +13,28 @@ const Feedback = () => {
   const { sendMood } = useMoodService();
   const student_id = location.state?.student_id || 1;
 
+  const [clickedButton, setClickedButton] = useState<string | null>(null);
+
+  const handleButtonAnimation = (
+    event: React.MouseEvent<HTMLButtonElement>
+  ) => {
+    const button = event.currentTarget;
+    button.style.transform = "scale(0.95)";
+    setTimeout(() => {
+      button.style.transform = "scale(1)";
+    }, 150);
+  };
+
   const handleMoodPress = async (
     emotion: "happy" | "neutral" | "sad",
-    isDaily: boolean
+    isDaily: boolean,
+    event: React.MouseEvent<HTMLButtonElement>
   ) => {
+    handleButtonAnimation(event); // Apply button animation
+    setClickedButton(emotion); // Set the clicked button for animation
     try {
       await sendMood(student_id, emotion, isDaily);
-      navigate("/checkout-greeting");
+      setTimeout(() => navigate("/checkout-greeting"), 500); // Delay navigation to allow animation
     } catch (error) {
       console.error(error);
     }
@@ -26,22 +43,37 @@ const Feedback = () => {
   return (
     <div style={styles.container}>
       <p style={styles.question}>How was your day at work?</p>
-      <button style={styles.btn} onClick={() => handleMoodPress("happy", true)}>
+      <button
+        style={{
+          ...styles.btn,
+          ...(clickedButton === "happy" ? styles.btnClicked : {}),
+        }}
+        onClick={(event) => handleMoodPress("happy", true, event)}
+      >
         <div style={styles.btnContent}>
           <img src={happyImage} alt="Happy" style={styles.image} />
           <span style={styles.text}>Happy</span>
         </div>
       </button>
       <button
-        style={styles.btn}
-        onClick={() => handleMoodPress("neutral", true)}
+        style={{
+          ...styles.btn,
+          ...(clickedButton === "neutral" ? styles.btnClicked : {}),
+        }}
+        onClick={(event) => handleMoodPress("neutral", true, event)}
       >
         <div style={styles.btnContent}>
           <img src={neutralImage} alt="Neutral" style={styles.image} />
           <span style={styles.text}>Neutral</span>
         </div>
       </button>
-      <button style={styles.btn} onClick={() => handleMoodPress("sad", true)}>
+      <button
+        style={{
+          ...styles.btn,
+          ...(clickedButton === "sad" ? styles.btnClicked : {}),
+        }}
+        onClick={(event) => handleMoodPress("sad", true, event)}
+      >
         <div style={styles.btnContent}>
           <img src={sadImage} alt="Sad" style={styles.image} />
           <span style={styles.text}>Sad</span>
@@ -71,6 +103,11 @@ const styles: Record<string, CSSProperties> = {
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
+    outline: "none",
+    transition: "transform 0.3s ease", // Add smooth transition
+  },
+  btnClicked: {
+    transform: "scale(0.95)", // Shrink effect on click
   },
   image: {
     width: "54px",
