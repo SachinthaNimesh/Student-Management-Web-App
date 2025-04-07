@@ -17,11 +17,12 @@ const CheckInScreen = () => {
   const navigate = useNavigate();
 
   // Set the API key for react-geocode
-  const googleGeoApiKey = process.env.CHOREO_GOOGLE_GEO_API_KEY || ""; // Use Choreo's environment variable
+  const googleGeoApiKey = import.meta.env.VITE_GOOGLE_GEO_API_KEY || ""; // Use Vite-specific prefix
   if (!googleGeoApiKey) {
     console.error(
-      "Google Geo API Key is not defined. Please set it in your Choreo environment configuration."
+      "Google Geo API Key is not defined. Please set it in your environment configuration."
     );
+    console.log("Google Geo API Key:", googleGeoApiKey);
   }
   Geocode.setKey(googleGeoApiKey);
   Geocode.setLanguage("en");
@@ -208,7 +209,7 @@ const styles: { [key: string]: CSSProperties } = {
   checkInText: {
     fontSize: "4.5vh",
     marginLeft: "2vh",
-    marginTop: "-32vh",
+    marginTop: "-40vh",
     color: "#000",
     fontWeight: "600",
     position: "fixed" as const,
