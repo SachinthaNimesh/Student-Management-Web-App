@@ -13,20 +13,33 @@ const CheckInScreen = () => {
     month: "",
   });
   const [userLocation, setUserLocation] = useState<string | null>(null);
+  const [googleGeoApiKey, setGoogleGeoApiKey] = useState<string>("");
 
   const navigate = useNavigate();
 
-  // Set the API key for react-geocode
-  const googleGeoApiKey = import.meta.env.VITE_GOOGLE_GEO_API_KEY || ""; // Use Vite-specific prefix
-  if (!googleGeoApiKey) {
-    console.error(
-      "Google Geo API Key is not defined. Please set it in your environment configuration."
-    );
-    console.log("Google Geo API Key:", googleGeoApiKey);
-  }
-  Geocode.setKey(googleGeoApiKey);
-  Geocode.setLanguage("en");
-  Geocode.setRegion("us");
+  useEffect(() => {
+    // Fetch the configuration file
+    const fetchConfig = async () => {
+      try {
+        const response = await fetch("/public/config.json");
+        const config = await response.json();
+        if (config.googleGeoApiKey) {
+          setGoogleGeoApiKey(config.googleGeoApiKey);
+          Geocode.setKey(config.googleGeoApiKey);
+          Geocode.setLanguage("en");
+          Geocode.setRegion("us");
+        } else {
+          console.error("Google Geo API Key is missing in the configuration file.");
+          alert("Google Geo API Key is missing. Please contact the administrator.");
+        }
+      } catch (error) {
+        console.error("Failed to load configuration file:", error);
+        alert("Failed to load configuration. Please try again later.");
+      }
+    };
+
+    fetchConfig();
+  }, []);
 
   const updateDateTime = () => {
     const now = new Date();
@@ -63,6 +76,12 @@ const CheckInScreen = () => {
   };
 
   const fetchLocation = async () => {
+    if (!googleGeoApiKey) {
+      console.error("Google Geo API Key is not set. Cannot fetch location.");
+      setUserLocation("Unable to fetch location. API key is missing.");
+      return;
+    }
+
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         async (position) => {
@@ -105,6 +124,11 @@ const CheckInScreen = () => {
   }, []);
 
   const handleCheckIn = async () => {
+    if (!googleGeoApiKey) {
+      alert("Google Geo API Key is not set. Cannot perform check-in.");
+      return;
+    }
+
     try {
       setLoading(true);
 
@@ -165,7 +189,7 @@ const CheckInScreen = () => {
       <p style={{ ...styles.infoText, marginTop: "-60px" }}>
         🕑 {currentDateTime.time} {currentDateTime.period}
       </p>
-      <p style={styles.infoText}>
+      <p style={styles.infoText}></p>
         📆 {currentDateTime.day} {currentDateTime.month}
       </p>
       <p style={styles.infoText}>📍 {userLocation || "Fetching location..."}</p>
