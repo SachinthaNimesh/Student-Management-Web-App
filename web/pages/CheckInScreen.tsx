@@ -18,27 +18,33 @@ const CheckInScreen = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Fetch the configuration file
-    const fetchConfig = async () => {
+    // Fetch the Google Geo API Key from Choreo environment variables
+    const fetchApiKey = async () => {
       try {
-        const response = await fetch("/public/config.json");
-        const config = await response.json();
-        if (config.googleGeoApiKey) {
-          setGoogleGeoApiKey(config.googleGeoApiKey);
-          Geocode.setKey(config.googleGeoApiKey);
+        const apiKey = process.env.GOOGLE_GEO_API_KEY;
+        if (apiKey) {
+          setGoogleGeoApiKey(apiKey);
+          Geocode.setKey(apiKey);
           Geocode.setLanguage("en");
           Geocode.setRegion("us");
         } else {
-          console.error("Google Geo API Key is missing in the configuration file.");
-          alert("Google Geo API Key is missing. Please contact the administrator.");
+          console.error(
+            "Google Geo API Key is missing in the environment variables."
+          );
+          alert(
+            "Google Geo API Key is missing. Please contact the administrator."
+          );
         }
       } catch (error) {
-        console.error("Failed to load configuration file:", error);
+        console.error(
+          "Failed to load Google Geo API Key from environment variables:",
+          error
+        );
         alert("Failed to load configuration. Please try again later.");
       }
     };
 
-    fetchConfig();
+    fetchApiKey();
   }, []);
 
   const updateDateTime = () => {
@@ -189,11 +195,10 @@ const CheckInScreen = () => {
       <p style={{ ...styles.infoText, marginTop: "-60px" }}>
         🕑 {currentDateTime.time} {currentDateTime.period}
       </p>
-      <p style={styles.infoText}></p>
+      <p style={styles.infoText}>
         📆 {currentDateTime.day} {currentDateTime.month}
       </p>
       <p style={styles.infoText}>📍 {userLocation || "Fetching location..."}</p>
-
       <button
         style={styles.btn}
         onClick={(event) => {
