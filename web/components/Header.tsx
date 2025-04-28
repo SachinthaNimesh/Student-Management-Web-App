@@ -27,7 +27,7 @@ const Header: React.FC = () => {
       <CssBaseline />
       <Container
         maxWidth="sm"
-        sx={{ position: "fixed", top: 0, left: 0, right: 0 }}
+        sx={{ position: "fixed", top: "20px", left: 0, right: 0 }}
       >
         <Box
           sx={{
