@@ -4,8 +4,11 @@ import react from '@vitejs/plugin-react'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
+  resolve: {
+    extensions: ['.ts', '.tsx', '.js', '.jsx'],
+  },
   base: './',
   define: {
-    'process.env': process.env,
+    'process.env.API_URL': JSON.stringify(process.env.API_URL)
   },
 })

@@ -70,7 +70,10 @@ const Emotion = () => {
           textAlign: "center",
         }}
       >
-        <p style={styles.question} onClick={() => navigate("/checkout")}>
+        <p
+          style={{ ...styles.question, fontFamily: "Poppins, sans-serif" }}
+          onClick={() => navigate("/checkout")}
+        >
           How are you feeling Now?
         </p>
         <button
@@ -89,7 +92,9 @@ const Emotion = () => {
                 height: "54px",
               }}
             />
-            <span style={styles.text}>Happy</span>
+            <span style={{ ...styles.text, fontFamily: "Poppins, sans-serif" }}>
+              Happy
+            </span>
           </div>
         </button>
         <button
@@ -108,7 +113,9 @@ const Emotion = () => {
                 height: "54px",
               }}
             />
-            <span style={styles.text}>Neutral</span>
+            <span style={{ ...styles.text, fontFamily: "Poppins, sans-serif" }}>
+              Neutral
+            </span>
           </div>
         </button>
         <button
@@ -127,7 +134,9 @@ const Emotion = () => {
                 height: "54px",
               }}
             />
-            <span style={styles.text}>Sad</span>
+            <span style={{ ...styles.text, fontFamily: "Poppins, sans-serif" }}>
+              Sad
+            </span>
           </div>
         </button>
       </div>
@@ -149,7 +158,9 @@ const Emotion = () => {
         <button
           style={{
             ...styles.btn,
-            padding: "13.31px 26.62px",
+            padding: "2vh 4vh",
+            height: "6vh",
+            width: "24vh",
           }}
           onClick={(e) => {
             handleButtonAnimation(e);
@@ -161,15 +172,16 @@ const Emotion = () => {
             <span>Loading...</span>
           ) : (
             <span
-              style={
-                {
-                  fontSize: "18.63px",
-                  color: "#000",
-                  textAlign: "center",
-                  fontFamily: "Poppins, sans-serif",
-                  outline: "none",
-                } as CSSProperties
-              }
+              style={{
+                ...styles.text,
+                fontSize: "2vh",
+                color: "#000",
+                textAlign: "center",
+                fontFamily: "Poppins, sans-serif",
+                outline: "none",
+                width: "100%",
+                fontWeight: "bold",
+              }}
             >
               Early Checkout
             </span>
