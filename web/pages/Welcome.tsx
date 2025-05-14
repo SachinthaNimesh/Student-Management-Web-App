@@ -46,10 +46,10 @@ const styles = {
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: "#0052A5",
-    width: "90vw", // Responsive width
-    maxWidth: "414px", // Max width for larger phones
-    height: "90vh", // Responsive height
-    maxHeight: "896px", // Max height for larger phones
+    width: "100vw", // Responsive width
+
+    height: "100vh", // Responsive height
+
     position: "absolute" as const,
     top: "50%",
     left: "50%",

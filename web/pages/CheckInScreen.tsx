@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { postCheckinById } from "../api/attendanceService";
-import * as Geocode from "react-geocode"; // Import react-geocode
 import React from "react";
+import {fetchLocationFromAPI} from "../api/locationService"; 
 
 const CheckInScreen = () => {
   const [loading, setLoading] = useState(false);
@@ -13,166 +13,114 @@ const CheckInScreen = () => {
     month: "",
   });
   const [userLocation, setUserLocation] = useState<string | null>(null);
-  const [googleGeoApiKey, setGoogleGeoApiKey] = useState<string>("");
+  const [latitude, setLatitude] = useState<number | null>(null);
+  const [longitude, setLongitude] = useState<number | null>(null);
 
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Fetch the Google Geo API Key from Choreo environment variables
-    const fetchApiKey = async () => {
+    const updateDateTime = () => {
+      const now = new Date();
+      let hours = now.getHours();
+      const minutes = now.getMinutes().toString().padStart(2, "0");
+      const period = hours >= 12 ? "PM" : "AM";
+      hours = hours ? hours : 12;
+      const day = now.getDate();
+      const monthNames = [
+        "January",
+        "February",
+        "March",
+        "April",
+        "May",
+        "June",
+        "July",
+        "August",
+        "September",
+        "October",
+        "November",
+        "December",
+      ];
+      const month = monthNames[now.getMonth()];
+      setCurrentDateTime({
+        time: `${hours}:${minutes}`,
+        period,
+        day: day.toString(),
+        month,
+      });
+    };
+
+    updateDateTime();
+    const intervalId = setInterval(updateDateTime, 1000);
+    
+    const fetchLocation = async () => {
       try {
-        const apiKey = process.env.GOOGLE_GEO_API_KEY;
-        if (apiKey) {
-          setGoogleGeoApiKey(apiKey);
-          Geocode.setKey(apiKey);
-          Geocode.setLanguage("en");
-          Geocode.setRegion("us");
-        } else {
-          console.error(
-            "Google Geo API Key is missing in the environment variables."
-          );
-          alert(
-            "Google Geo API Key is missing. Please contact the administrator."
-          );
-        }
+        const locationData = await fetchLocationFromAPI(); // Call the API
+        const { latitude, longitude, address } = locationData;
+        setLatitude(latitude);
+        setLongitude(longitude);
+        setUserLocation(address || `Lat: ${latitude}, Lng: ${longitude}`);
       } catch (error) {
-        console.error(
-          "Failed to load Google Geo API Key from environment variables:",
-          error
-        );
-        alert("Failed to load configuration. Please try again later.");
+        console.error("Failed to fetch location:", error);
+        setUserLocation("Failed to fetch location");
       }
     };
 
-    fetchApiKey();
-  }, []);
-
-  const updateDateTime = () => {
-    const now = new Date();
-
-    let hours = now.getHours();
-    const minutes = now.getMinutes().toString().padStart(2, "0");
-
-    const period = hours >= 12 ? "PM" : "AM";
-    hours = hours ? hours : 12;
-
-    const day = now.getDate();
-    const monthNames = [
-      "January",
-      "February",
-      "March",
-      "April",
-      "May",
-      "June",
-      "July",
-      "August",
-      "September",
-      "October",
-      "November",
-      "December",
-    ];
-
-    const month = monthNames[now.getMonth()];
-    setCurrentDateTime({
-      time: `${hours}:${minutes}`,
-      period,
-      day: day.toString(),
-      month,
-    });
-  };
-
-  const fetchLocation = async () => {
-    if (!googleGeoApiKey) {
-      console.error("Google Geo API Key is not set. Cannot fetch location.");
-      setUserLocation("Unable to fetch location. API key is missing.");
-      return;
-    }
-
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        async (position) => {
-          const { latitude, longitude } = position.coords;
-
-          console.log("Latitude:", latitude, "Longitude:", longitude); // Log latitude and longitude
-
-          try {
-            // Use react-geocode to fetch the address
-            const response = await Geocode.fromLatLng(latitude, longitude);
-            const address = response.results[0].formatted_address;
-            setUserLocation(address);
-          } catch (error) {
-            console.error("Error occurred while fetching address:", error);
-            setUserLocation(
-              "Error fetching address. Please ensure the API key is valid and try again."
-            );
-          }
-        },
-        (error) => {
-          console.error(
-            "Error occurred while fetching geolocation:",
-            error.code,
-            error.message
-          );
-          setUserLocation("Unable to fetch location");
-        }
-      );
-    } else {
-      console.error("Geolocation is not supported by this browser.");
-      setUserLocation("Geolocation not supported");
-    }
-  };
-
-  useEffect(() => {
-    updateDateTime();
-    const intervalId = setInterval(updateDateTime, 1000);
     fetchLocation();
-    return () => clearInterval(intervalId);
+
+    // Listen for location updates from the React Native app
+    const handleLocationMessage = (event: MessageEvent) => {
+      if (event.data && event.data.type === "LOCATION_UPDATE") {
+        const { latitude, longitude, address } = event.data.payload;
+        console.log(
+          "Received location from native app:",
+          latitude,
+          longitude,
+          address
+        );
+        setLatitude(latitude);
+        setLongitude(longitude);
+        setUserLocation(address || `Lat: ${latitude}, Lng: ${longitude}`);
+      }
+    };
+
+    window.addEventListener("message", handleLocationMessage);
+
+    // Use default location if no message is received within 3 seconds
+    const defaultLocationTimeout = setTimeout(() => {
+      if (!userLocation) {
+        const defaultLocation = {
+          latitude: 12.345678,
+          longitude: 98.765432,
+          address: "123 Main St, City, Country",
+        };
+        console.log("Using default location:", defaultLocation);
+        setLatitude(defaultLocation.latitude);
+        setLongitude(defaultLocation.longitude);
+        setUserLocation(defaultLocation.address);
+      }
+    }, 3000);
+
+    return () => {
+      clearInterval(intervalId);
+      clearTimeout(defaultLocationTimeout);
+      window.removeEventListener("message", handleLocationMessage);
+    };
   }, []);
 
   const handleCheckIn = async () => {
-    if (!googleGeoApiKey) {
-      alert("Google Geo API Key is not set. Cannot perform check-in.");
-      return;
-    }
-
     try {
       setLoading(true);
 
-      if (!navigator.geolocation) {
-        alert("Geolocation is not supported by this browser.");
-        console.error("Geolocation is not supported by this browser.");
+      const studentId = 1; // Replace this with actual logic to fetch student ID
+      if (!userLocation || !latitude || !longitude) {
+        alert("Location is not available. Please try again.");
         return;
       }
 
-      navigator.geolocation.getCurrentPosition(
-        async (position) => {
-          const { latitude, longitude } = position.coords;
-
-          console.log("Latitude:", latitude, "Longitude:", longitude); // Log latitude and longitude
-
-          try {
-            const studentId = 1; // Replace this with actual logic to fetch student ID
-            await postCheckinById(studentId, latitude, longitude, true);
-            navigate("/welcome-greeting");
-          } catch (error) {
-            console.error(
-              "Error occurred while sending check-in data to the backend:",
-              error
-            );
-            alert("An error occurred during check-in. Please try again.");
-          }
-        },
-        (error) => {
-          console.error(
-            "Error occurred while fetching geolocation during check-in:",
-            error.code,
-            error.message
-          );
-          alert("Unable to fetch location. Please try again.");
-        }
-      );
+      await postCheckinById(studentId, latitude, longitude, true);
+      navigate("/welcome-greeting");
     } catch (error) {
-      console.error("An unexpected error occurred during check-in:", error);
+      console.error("An error occurred during check-in:", error);
       alert("An error occurred during check-in. Please try again.");
     } finally {
       setLoading(false);
@@ -198,7 +146,9 @@ const CheckInScreen = () => {
       <p style={styles.infoText}>
         📆 {currentDateTime.day} {currentDateTime.month}
       </p>
-      <p style={styles.infoText}>📍 {userLocation || "Fetching location..."}</p>
+      <p style={styles.infoText}>
+        📍 {userLocation || "Waiting for location..."}
+      </p>
       <button
         style={styles.btn}
         onClick={(event) => {
@@ -223,7 +173,7 @@ const styles: { [key: string]: CSSProperties } = {
   checkInFrame: {
     width: "calc(100% - 60px)",
     maxWidth: "400px",
-    height: "460px",
+    height: "58vh",
     borderRadius: "18px",
     backgroundColor: "rgba(225, 225, 225, 0.4)",
     display: "flex",
@@ -259,7 +209,7 @@ const styles: { [key: string]: CSSProperties } = {
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    marginBottom: "4vh",
+    marginBottom: "5vh",
     borderRadius: "15px",
     border: "1px solid rgba(0, 0, 0, 0.20)",
     boxShadow: "0px 4px 4px rgba(0, 0, 0, 0.25)",

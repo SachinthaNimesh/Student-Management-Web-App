@@ -1,14 +1,14 @@
 import { Paper } from "@mui/material";
-import Header from "../components/Header"; // Import Header properly
-import CheckInScreen from "../pages/CheckInScreen"; // Import CheckInScreen
+import Header from "../components/Header";
+import CheckInScreen from "../pages/CheckInScreen";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
-import WelcomeGreeting from "../pages/WelcomeGreeting"; // Import WelcomeGreeting
-import Emotion from "../pages/Emotion"; // Import Emotion
-import CheckOutScreen from "../pages/CheckOutScreen"; // Import CheckOutScreen
-import Welcome from "../pages/Welcome"; // Import Welcome
-import Feedback from "../pages/Feedback"; // Import Feedback
-import CheckOutGreeting from "../pages/CheckOutGreeting"; // Import CheckOutGreeting
-import BackgroundImage from "../assets/bg2.jpg"; // Import background image
+import WelcomeGreeting from "../pages/WelcomeGreeting";
+import Emotion from "../pages/Emotion";
+import CheckOutScreen from "../pages/CheckOutScreen";
+import Welcome from "../pages/Welcome";
+import Feedback from "../pages/Feedback";
+import CheckOutGreeting from "../pages/CheckOutGreeting";
+import BackgroundImage from "../assets/bg2.jpg";
 function PaperWrapper({ children }: { children: React.ReactNode }) {
   return (
     <div
@@ -21,17 +21,15 @@ function PaperWrapper({ children }: { children: React.ReactNode }) {
     >
       <Paper
         style={{
+          flex: 1,
           backgroundImage: `url(${BackgroundImage})`,
           backgroundSize: "cover",
           backgroundPosition: "center",
-          width: "90vw", // Responsive width
-          maxWidth: "414px", // Max width for larger phones
-          height: "90vh", // Responsive height
-          maxHeight: "896px", // Max height for larger phones
+          width: "100vw", // Full width of the screen
+          height: "100vh", // Full height of the screen
           position: "absolute",
-          top: "50%",
-          left: "50%",
-          transform: "translate(-50%, -50%)",
+          top: "0", // Align to the top
+          left: "0", // Align to the left
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
