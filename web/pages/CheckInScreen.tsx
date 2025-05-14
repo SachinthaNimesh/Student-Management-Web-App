@@ -4,7 +4,17 @@ import { postCheckinById } from "../api/attendanceService";
 import React from "react";
 import {fetchLocationFromAPI} from "../api/locationService"; 
 
-const GOOGLE_API_KEY = import.meta.env.VITE_GOOGLE_API_KEY;
+declare global {
+  interface Window {
+    config: {
+      GOOGLE_API_KEY: string;
+    };
+  }
+}
+
+// Access the GOOGLE_API_KEY
+const GOOGLE_API_KEY = window.config.GOOGLE_API_KEY;
+console.log("Google API Key:", GOOGLE_API_KEY);
 if (!GOOGLE_API_KEY) {
   console.error("Google API Key is not defined. Please check your .env file.");
 }
