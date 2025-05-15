@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { postCheckinById } from "../api/attendanceService";
 import React from "react";
 import {fetchLocationFromAPI} from "../api/locationService"; 
+import { GOOGLE_API_KEY } from "../config/config";
+import { CSSProperties } from "react";
 
 const CheckInScreen = () => {
   const [loading, setLoading] = useState(false);
@@ -17,6 +19,9 @@ const CheckInScreen = () => {
   const [longitude, setLongitude] = useState<number | null>(null);
 
   const navigate = useNavigate();
+
+  console.log(GOOGLE_API_KEY);
+  
 
   useEffect(() => {
     const updateDateTime = () => {
@@ -167,7 +172,6 @@ const CheckInScreen = () => {
   );
 };
 
-import { CSSProperties } from "react";
 
 const styles: { [key: string]: CSSProperties } = {
   checkInFrame: {
