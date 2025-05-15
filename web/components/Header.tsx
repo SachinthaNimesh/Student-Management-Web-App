@@ -3,7 +3,7 @@ import RealTimeClock from "../components/RealTimeClock";
 import { getStudentById } from "../api/studentService";
 import { Student } from "../types/student";
 
-import ProfilePicture from "../assets/user.jpg";
+import ProfilePicture from "../assets/profile_male.png";
 import CssBaseline from "@mui/material/CssBaseline";
 import Box from "@mui/material/Box";
 import Container from "@mui/material/Container";

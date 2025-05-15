@@ -42,6 +42,7 @@ const Emotion = () => {
           alert("Unable to retrieve your location");
         }
       );
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
       alert("An error occurred during check-out");
     } finally {

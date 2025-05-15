@@ -116,39 +116,6 @@ const CheckInScreen = () => {
 
     updateDateTime();
   }, []);
-    // const fetchLocation = async () => {
-    //   try {
-    //     const locationData = await fetchLocationFromAPI(); // Call the API
-    //     const { latitude, longitude, address } = locationData;
-    //     setLatitude(latitude);
-    //     setLongitude(longitude);
-    //     setUserLocation(address || `Lat: ${latitude}, Lng: ${longitude}`);
-    //   } catch (error) {
-    //     console.error("Failed to fetch location:", error);
-    //     setUserLocation("Failed to fetch location");
-    //   }
-    // };
-
-    // fetchLocation();
-
-    // Listen for location updates from the React Native app
-    // const handleLocationMessage = (event: MessageEvent) => {
-    //   if (event.data && event.data.type === "LOCATION_UPDATE") {
-    //     const { latitude, longitude, address } = event.data.payload;
-    //     console.log(
-    //       "Received location from native app:",
-    //       latitude,
-    //       longitude,
-    //       address
-    //     );
-    //     setLatitude(latitude);
-    //     setLongitude(longitude);
-    //     setUserLocation(address || `Lat: ${latitude}, Lng: ${longitude}`);
-    //   }
-    // };
-
-    // window.addEventListener("message", handleLocationMessage);
-
 
   const handleCheckIn = async () => {
     try {
