@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { postCheckinById } from "../api/attendanceService";
 import React from "react";
-import { fetchLocationFromAPI } from "../api/locationService";
+// import { fetchLocationFromAPI } from "../api/locationService";
 import { GOOGLE_API_KEY } from "../config/config";
 import { CSSProperties } from "react";
 import axios from "axios";
@@ -19,43 +19,8 @@ const CheckInScreen = () => {
   const [latitude, setLatitude] = useState<number | null>(null);
   const [longitude, setLongitude] = useState<number | null>(null);
 
-  useEffect(() => {
-    const getDeviceLocation = async () => {
-      try {
-        if (!navigator.geolocation) {
-          console.error("Geolocation is not supported by this browser.");
-          return;
-        }
-
-        navigator.geolocation.getCurrentPosition(
-          async (position) => {
-            const { latitude, longitude } = position.coords;
-
-            const address = await reverseGeocode(latitude, longitude);
-
-            setLatitude(latitude);
-            setLongitude(longitude);
-            setUserLocation(address || `Lat: ${latitude}, Lng: ${longitude}`);
-          },
-          (error) => {
-            console.error("Error getting location: ", error);
-            setUserLocation("Failed to fetch location");
-          },
-          { enableHighAccuracy: true }
-        );
-      } catch (error) {
-        console.error("Error getting location: ", error);
-        setUserLocation("Failed to fetch location");
-      }
-    };
-
-    getDeviceLocation();
-  }, []);
-
   const reverseGeocode = async (latitude: number, longitude: number) => {
     try {
-      //  const GOOGLE_API_KEY = GOOGLE_API_KEY;  // Access the API key from the environment variables
-      console.log("Google API Key:", GOOGLE_API_KEY); // Debugging line
       if (!GOOGLE_API_KEY) {
         throw new Error(
           "Please provide a valid Google API key in your .env file"
@@ -82,9 +47,41 @@ const CheckInScreen = () => {
     }
   };
 
-  const navigate = useNavigate();
+  useEffect(() => {
+    const getDeviceLocation = async () => {
+      try {
+        if (!navigator.geolocation) {
+          console.error("Geolocation is not supported by this browser.");
+          return;
+        }
 
-  console.log(GOOGLE_API_KEY);
+        navigator.geolocation.getCurrentPosition(
+          async (position) => {
+            const { latitude, longitude } = position.coords;
+
+            const address = await reverseGeocode(latitude, longitude);
+            console.log(address);
+
+            setLatitude(latitude);
+            setLongitude(longitude);
+            setUserLocation(address || `Lat: ${latitude}, Lng: ${longitude}`);
+          },
+          (error) => {
+            console.error("Error getting location: ", error);
+            setUserLocation("Failed to fetch location");
+          },
+          { enableHighAccuracy: true }
+        );
+      } catch (error) {
+        console.error("Error getting location: ", error);
+        setUserLocation("Failed to fetch location");
+      }
+    };
+
+    getDeviceLocation();
+  }, []);
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     const updateDateTime = () => {
@@ -120,38 +117,38 @@ const CheckInScreen = () => {
     updateDateTime();
     const intervalId = setInterval(updateDateTime, 1000);
 
-    const fetchLocation = async () => {
-      try {
-        const locationData = await fetchLocationFromAPI(); // Call the API
-        const { latitude, longitude, address } = locationData;
-        setLatitude(latitude);
-        setLongitude(longitude);
-        setUserLocation(address || `Lat: ${latitude}, Lng: ${longitude}`);
-      } catch (error) {
-        console.error("Failed to fetch location:", error);
-        setUserLocation("Failed to fetch location");
-      }
-    };
+    // const fetchLocation = async () => {
+    //   try {
+    //     const locationData = await fetchLocationFromAPI(); // Call the API
+    //     const { latitude, longitude, address } = locationData;
+    //     setLatitude(latitude);
+    //     setLongitude(longitude);
+    //     setUserLocation(address || `Lat: ${latitude}, Lng: ${longitude}`);
+    //   } catch (error) {
+    //     console.error("Failed to fetch location:", error);
+    //     setUserLocation("Failed to fetch location");
+    //   }
+    // };
 
-    fetchLocation();
+    // fetchLocation();
 
     // Listen for location updates from the React Native app
-    const handleLocationMessage = (event: MessageEvent) => {
-      if (event.data && event.data.type === "LOCATION_UPDATE") {
-        const { latitude, longitude, address } = event.data.payload;
-        console.log(
-          "Received location from native app:",
-          latitude,
-          longitude,
-          address
-        );
-        setLatitude(latitude);
-        setLongitude(longitude);
-        setUserLocation(address || `Lat: ${latitude}, Lng: ${longitude}`);
-      }
-    };
+    // const handleLocationMessage = (event: MessageEvent) => {
+    //   if (event.data && event.data.type === "LOCATION_UPDATE") {
+    //     const { latitude, longitude, address } = event.data.payload;
+    //     console.log(
+    //       "Received location from native app:",
+    //       latitude,
+    //       longitude,
+    //       address
+    //     );
+    //     setLatitude(latitude);
+    //     setLongitude(longitude);
+    //     setUserLocation(address || `Lat: ${latitude}, Lng: ${longitude}`);
+    //   }
+    // };
 
-    window.addEventListener("message", handleLocationMessage);
+    // window.addEventListener("message", handleLocationMessage);
 
     // Use default location if no message is received within 3 seconds
     const defaultLocationTimeout = setTimeout(() => {
@@ -171,7 +168,7 @@ const CheckInScreen = () => {
     return () => {
       clearInterval(intervalId);
       clearTimeout(defaultLocationTimeout);
-      window.removeEventListener("message", handleLocationMessage);
+      // window.removeEventListener("message", handleLocationMessage);
     };
   }, []);
 
