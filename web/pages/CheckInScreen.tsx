@@ -2,9 +2,10 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { postCheckinById } from "../api/attendanceService";
 import React from "react";
-import {fetchLocationFromAPI} from "../api/locationService"; 
+import { fetchLocationFromAPI } from "../api/locationService";
 import { GOOGLE_API_KEY } from "../config/config";
 import { CSSProperties } from "react";
+import axios from "axios";
 
 const CheckInScreen = () => {
   const [loading, setLoading] = useState(false);
@@ -18,10 +19,72 @@ const CheckInScreen = () => {
   const [latitude, setLatitude] = useState<number | null>(null);
   const [longitude, setLongitude] = useState<number | null>(null);
 
+  useEffect(() => {
+    const getDeviceLocation = async () => {
+      try {
+        if (!navigator.geolocation) {
+          console.error("Geolocation is not supported by this browser.");
+          return;
+        }
+
+        navigator.geolocation.getCurrentPosition(
+          async (position) => {
+            const { latitude, longitude } = position.coords;
+
+            const address = await reverseGeocode(latitude, longitude);
+
+            setLatitude(latitude);
+            setLongitude(longitude);
+            setUserLocation(address || `Lat: ${latitude}, Lng: ${longitude}`);
+          },
+          (error) => {
+            console.error("Error getting location: ", error);
+            setUserLocation("Failed to fetch location");
+          },
+          { enableHighAccuracy: true }
+        );
+      } catch (error) {
+        console.error("Error getting location: ", error);
+        setUserLocation("Failed to fetch location");
+      }
+    };
+
+    getDeviceLocation();
+  }, []);
+
+  const reverseGeocode = async (latitude: number, longitude: number) => {
+    try {
+      //  const GOOGLE_API_KEY = GOOGLE_API_KEY;  // Access the API key from the environment variables
+      console.log("Google API Key:", GOOGLE_API_KEY); // Debugging line
+      if (!GOOGLE_API_KEY) {
+        throw new Error(
+          "Please provide a valid Google API key in your .env file"
+        );
+      }
+
+      interface GeocodeResponse {
+        status: string;
+        results: { formatted_address: string }[];
+      }
+
+      const response = await axios.get<GeocodeResponse>(
+        `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${GOOGLE_API_KEY}`
+      );
+
+      if (response.data.status === "OK" && response.data.results.length > 0) {
+        return response.data.results[0].formatted_address;
+      } else {
+        throw new Error(`Geocoding API error: ${response.data.status}`);
+      }
+    } catch (error) {
+      console.error("Geocoding error:", error);
+      return "Address lookup failed";
+    }
+  };
+
   const navigate = useNavigate();
 
   console.log(GOOGLE_API_KEY);
-  
 
   useEffect(() => {
     const updateDateTime = () => {
@@ -56,7 +119,7 @@ const CheckInScreen = () => {
 
     updateDateTime();
     const intervalId = setInterval(updateDateTime, 1000);
-    
+
     const fetchLocation = async () => {
       try {
         const locationData = await fetchLocationFromAPI(); // Call the API
@@ -171,7 +234,6 @@ const CheckInScreen = () => {
     </div>
   );
 };
-
 
 const styles: { [key: string]: CSSProperties } = {
   checkInFrame: {

@@ -25,4 +25,5 @@ dist-ssr
 .DS_Store
 .env
 
+# config.js
 ./public/config.js
