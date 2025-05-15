@@ -115,8 +115,7 @@ const CheckInScreen = () => {
     };
 
     updateDateTime();
-    const intervalId = setInterval(updateDateTime, 1000);
-
+  }, []);
     // const fetchLocation = async () => {
     //   try {
     //     const locationData = await fetchLocationFromAPI(); // Call the API
@@ -150,27 +149,6 @@ const CheckInScreen = () => {
 
     // window.addEventListener("message", handleLocationMessage);
 
-    // Use default location if no message is received within 3 seconds
-    const defaultLocationTimeout = setTimeout(() => {
-      if (!userLocation) {
-        const defaultLocation = {
-          latitude: 12.345678,
-          longitude: 98.765432,
-          address: "123 Main St, City, Country",
-        };
-        console.log("Using default location:", defaultLocation);
-        setLatitude(defaultLocation.latitude);
-        setLongitude(defaultLocation.longitude);
-        setUserLocation(defaultLocation.address);
-      }
-    }, 3000);
-
-    return () => {
-      clearInterval(intervalId);
-      clearTimeout(defaultLocationTimeout);
-      // window.removeEventListener("message", handleLocationMessage);
-    };
-  }, []);
 
   const handleCheckIn = async () => {
     try {
