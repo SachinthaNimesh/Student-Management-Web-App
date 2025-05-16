@@ -228,6 +228,12 @@ const [deviceId, setDeviceId] = useState<number | null>(null);
       <p style={styles.infoText}>
         📍 {userLocation || "Waiting for location..."}
       </p>
+      {/* test */}
+      <p>
+        Connected Device ID: {deviceId !== null ? deviceId : "Not available"}
+        <button
+        onClick={performActionWithDeviceId}>Perform action with device ID</button>
+      </p>
       <button
         style={styles.btn}
         onClick={(event) => {
@@ -242,11 +248,7 @@ const [deviceId, setDeviceId] = useState<number | null>(null);
           <span style={styles.btnText}>Check in</span>
         )}
       </button>
-      <p>
-        Connected Device ID: {deviceId !== null ? deviceId : "Not available"}
-        <button
-        onClick={performActionWithDeviceId}>Perform action with device ID</button>
-      </p>
+      
     </div>
   );
 };
