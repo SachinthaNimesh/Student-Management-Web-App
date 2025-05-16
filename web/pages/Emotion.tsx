@@ -30,11 +30,14 @@ const Emotion = () => {
     try {
       if (studentId === null) {
         alert("Unable to retrieve student ID");
+        console.error("Error: studentId is null in handleMoodPress");
         return;
       }
+      console.log(`Sending mood: ${emotion}, isDaily: ${isDaily}, studentId: ${studentId}`);
       await sendMood(studentId, emotion, isDaily);
+      console.log("Mood sent successfully");
     } catch (error) {
-      console.error(error);
+      console.error("Error in handleMoodPress:", error);
     }
   };
 
@@ -43,26 +46,32 @@ const Emotion = () => {
       setLoading(true);
       if (studentId === null) {
         alert("Unable to retrieve student ID");
+        console.error("Error: studentId is null in handleCheckOut");
         return;
       }
       if (!navigator.geolocation) {
         alert("Geolocation is not supported by your browser");
+        console.error("Error: Geolocation not supported");
         return;
       }
 
+      console.log("Attempting to get geolocation...");
       navigator.geolocation.getCurrentPosition(
         async (position) => {
           const { latitude, longitude } = position.coords;
-
+          console.log(`Geolocation retrieved: latitude=${latitude}, longitude=${longitude}`);
           await postCheckoutById(studentId, latitude, longitude);
+          console.log("Checkout successful");
           navigate("/feedback");
         },
-        () => {
+        (error) => {
           alert("Unable to retrieve your location");
+          console.error("Error retrieving geolocation:", error);
         }
       );
     } catch (error) {
       alert("An error occurred during check-out: " + error);
+      console.error("Error in handleCheckOut:", error);
     } finally {
       setLoading(false);
     }
