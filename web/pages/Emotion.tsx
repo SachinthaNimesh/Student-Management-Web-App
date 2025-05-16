@@ -12,13 +12,18 @@ import { getStudentByIdNative } from "../api/getStudentService";
 const Emotion = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const location = useLocation();
+  // const location = useLocation();
   const { sendMood } = useMoodService();
-  const student_id = location.state?.student_id || 1;
+  // const student_id = location.state?.student_id || 1;
 
   const handleMoodPress = async (emotion: string, isDaily: boolean) => {
     try {
-      await sendMood(student_id, emotion, isDaily);
+      const studentId = await getStudentByIdNative(); // dynamically fetch student id
+      if (studentId === null) {
+        alert("Unable to retrieve student ID");
+        return;
+      }
+      await sendMood(studentId, emotion, isDaily);
     } catch (error) {
       console.error(error);
     }
@@ -27,6 +32,11 @@ const Emotion = () => {
   const handleCheckOut = async () => {
     try {
       setLoading(true);
+      const studentId = await getStudentByIdNative(); // dynamically fetch student id
+      if (studentId === null) {
+        alert("Unable to retrieve student ID");
+        return;
+      }
       if (!navigator.geolocation) {
         alert("Geolocation is not supported by your browser");
         return;
@@ -35,11 +45,7 @@ const Emotion = () => {
       navigator.geolocation.getCurrentPosition(
         async (position) => {
           const { latitude, longitude } = position.coords;
-            const studentId = await getStudentByIdNative(); // dynamically fetch student id
-            if (studentId === null) {
-              alert("Unable to retrieve student ID");
-              return;
-            }
+           
           await postCheckoutById(studentId, latitude, longitude);
           navigate("/feedback");
         },
