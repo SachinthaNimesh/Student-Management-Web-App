@@ -3,7 +3,7 @@ import { API_URL } from '../config/config';
 import { AxiosResponse } from 'axios';
 import type { AxiosError } from 'axios';
 
-export const postCheckinById = async (id: number, latitude: number, longitude: number, checkIn: boolean): Promise<any> => {
+export const postCheckinById = async (id: number, latitude: number, longitude: number, checkIn: boolean): Promise<unknown> => {
     try {
         const requestData = {
             check_in: checkIn,

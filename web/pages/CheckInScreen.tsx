@@ -7,6 +7,12 @@ import { GOOGLE_API_KEY } from "../config/config";
 import { CSSProperties } from "react";
 import axios from "axios";
 
+declare global {
+  interface Window {
+    deviceId?: number;
+  }
+} 
+
 const CheckInScreen = () => {
   const [loading, setLoading] = useState(false);
   const [currentDateTime, setCurrentDateTime] = useState({
@@ -116,6 +122,18 @@ const CheckInScreen = () => {
 
     updateDateTime();
   }, []);
+  // testing
+  const [deviceId, setDeviceId] = useState<number | null>(null);
+
+  useEffect(() => {
+    // Fetch the deviceId from the window object
+    if (window.deviceId) {
+      setDeviceId(window.deviceId);
+      console.log("Device ID fetched:", window.deviceId);
+    } else {
+      console.error("Device ID not found in window object!");
+    }
+  }, []);
 
   const handleCheckIn = async () => {
     try {
@@ -173,6 +191,9 @@ const CheckInScreen = () => {
           <span style={styles.btnText}>Check in</span>
         )}
       </button>
+      <p style={styles.infoText}>
+        Device ID: {deviceId !== null ? deviceId : "Not available"}
+      </p>
     </div>
   );
 };
