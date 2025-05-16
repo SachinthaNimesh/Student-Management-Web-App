@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect,useState } from "react";
 import RealTimeClock from "../components/RealTimeClock";
 import { getStudentById } from "../api/studentService";
 import { Student } from "../types/student";
@@ -11,12 +11,21 @@ import { getStudentByIdNative } from "../api/getStudentService";
 
 const Header: React.FC = () => {
   const [student, setStudent] = React.useState<Student | null>(null);
+  const [studentId, setStudentId] = useState<number | null>(null);
+
+  useEffect(() => {
+    const fetchstudentId = async () => {
+      const studentId = await getStudentByIdNative();
+      setStudentId(studentId);
+      console.log("Fetched studentId from getStudentByIdNative:", studentId);
+    };
+
+    fetchstudentId();
+  }, []); // Fetch studentId on component mount
+
   useEffect(() => {
     const fetchStudent = async () => {
       try {
-        const studentId = await getStudentByIdNative();
-        console.log("Fetched studentId from getStudentByIdNative:", studentId);
-
         if (studentId !== null) {
           const student = await getStudentById(studentId);
           console.log("Fetched student details from getStudentById:", student);
@@ -30,7 +39,8 @@ const Header: React.FC = () => {
     };
 
     fetchStudent();
-  }, []);
+  }, [studentId]); // Fetch student details when studentId changes
+
   return (
     <React.Fragment>
       <CssBaseline />

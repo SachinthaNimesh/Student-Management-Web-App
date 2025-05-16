@@ -1,9 +1,91 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { postCheckoutById } from "../api/attendanceService";
 import { getStudentByIdNative } from "../api/getStudentService";
 import checkoutImage from "../assets/checkout.png";
 
+const CheckOutScreen: React.FC = () => {
+  const [loading, setLoading] = useState(false);
+  const [studentId, setStudentId] = useState<number | null>(null); // Add state for studentId
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchstudentId = async () => {
+      const studentId = await getStudentByIdNative();
+      setStudentId(studentId);
+      console.log("Fetched studentId from getStudentByIdNative:", studentId);
+    };
+
+    fetchstudentId();
+  }, []); // Fetch studentId on component mount
+
+  const handleButtonAnimation = (
+    event: React.MouseEvent<HTMLButtonElement>
+  ) => {
+    const button = event.currentTarget;
+    button.style.transform = "scale(0.95)";
+    setTimeout(() => {
+      button.style.transform = "scale(1)";
+    }, 150);
+  };
+
+  const handleCheckOut = async (event: React.MouseEvent<HTMLButtonElement>) => {
+    handleButtonAnimation(event);
+    try {
+      setLoading(true);
+
+      // Request location permissions and get the current location
+      if (!navigator.geolocation) {
+        alert("Geolocation is not supported by your browser");
+        return;
+      }
+
+      navigator.geolocation.getCurrentPosition(
+        async (position) => {
+          const { latitude, longitude } = position.coords;
+
+          if (!studentId) {
+            alert("Unable to retrieve student ID");
+            return;
+          }
+
+          // Send check-out data to the backend
+          await postCheckoutById(studentId, latitude, longitude);
+
+          navigate("/feedback");
+        },
+        () => {
+          alert("Unable to retrieve your location");
+        }
+      );
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (error) {
+      alert("An error occurred during check-out");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div style={styles.flexBox}>
+      <img src={checkoutImage} alt="Checkout" style={styles.image} />
+      <button
+        style={{
+          ...styles.btn,
+          ...(loading ? styles.btnDisabled : {}),
+        }}
+        onClick={handleCheckOut}
+        disabled={loading}
+      >
+        {loading ? (
+          <div style={styles.spinner}></div>
+        ) : (
+          <span style={styles.text}>Checkout</span>
+        )}
+      </button>
+    </div>
+  );
+};
 const styles = {
   flexBox: {
     padding: "10px",
@@ -63,79 +145,4 @@ const styles = {
     to: { transform: "rotate(360deg)" },
   },
 };
-
-const CheckOutScreen: React.FC = () => {
-  const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
-
-  const handleButtonAnimation = (
-    event: React.MouseEvent<HTMLButtonElement>
-  ) => {
-    const button = event.currentTarget;
-    button.style.transform = "scale(0.95)";
-    setTimeout(() => {
-      button.style.transform = "scale(1)";
-    }, 150);
-  };
-
-  const handleCheckOut = async (event: React.MouseEvent<HTMLButtonElement>) => {
-    handleButtonAnimation(event);
-    try {
-      setLoading(true);
-
-      // Request location permissions and get the current location
-      if (!navigator.geolocation) {
-        alert("Geolocation is not supported by your browser");
-        return;
-      }
-
-      navigator.geolocation.getCurrentPosition(
-        async (position) => {
-          const { latitude, longitude } = position.coords;
-
-          // Dynamically fetch the student ID
-          const studentId = await getStudentByIdNative();
-          if (!studentId) {
-            alert("Unable to retrieve student ID");
-            return;
-          }
-
-          // Send check-out data to the backend
-          await postCheckoutById(studentId, latitude, longitude);
-
-          navigate("/feedback");
-        },
-        () => {
-          alert("Unable to retrieve your location");
-        }
-      );
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    } catch (error) {
-      alert("An error occurred during check-out");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return (
-    <div style={styles.flexBox}>
-      <img src={checkoutImage} alt="Checkout" style={styles.image} />
-      <button
-        style={{
-          ...styles.btn,
-          ...(loading ? styles.btnDisabled : {}),
-        }}
-        onClick={handleCheckOut}
-        disabled={loading}
-      >
-        {loading ? (
-          <div style={styles.spinner}></div>
-        ) : (
-          <span style={styles.text}>Checkout</span>
-        )}
-      </button>
-    </div>
-  );
-};
-
 export default CheckOutScreen;

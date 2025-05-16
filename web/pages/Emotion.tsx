@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useMoodService } from "../api/moodService";
 import { postCheckoutById } from "../api/attendanceService";
@@ -9,16 +9,25 @@ import SadImage from "../assets/sad.png";
 import CheckoutImage from "../assets/checkout.png";
 import React from "react";
 import { getStudentByIdNative } from "../api/getStudentService";
+
 const Emotion = () => {
   const [loading, setLoading] = useState(false);
+  const [studentId, setStudentId] = useState<number | null>(null); // Moved useState here
   const navigate = useNavigate();
-  // const location = useLocation();
   const { sendMood } = useMoodService();
-  // const student_id = location.state?.student_id || 1;
+
+  useEffect(() => {
+    const fetchstudentId = async () => {
+      const studentId = await getStudentByIdNative();
+      setStudentId(studentId);
+      console.log("Fetched studentId from getStudentByIdNative:", studentId);
+    };
+
+    fetchstudentId();
+  }, []); // Fetch studentId on component mount
 
   const handleMoodPress = async (emotion: string, isDaily: boolean) => {
     try {
-      const studentId = await getStudentByIdNative(); // dynamically fetch student id
       if (studentId === null) {
         alert("Unable to retrieve student ID");
         return;
@@ -32,7 +41,6 @@ const Emotion = () => {
   const handleCheckOut = async () => {
     try {
       setLoading(true);
-      const studentId = await getStudentByIdNative(); // dynamically fetch student id
       if (studentId === null) {
         alert("Unable to retrieve student ID");
         return;
@@ -45,7 +53,7 @@ const Emotion = () => {
       navigator.geolocation.getCurrentPosition(
         async (position) => {
           const { latitude, longitude } = position.coords;
-           
+
           await postCheckoutById(studentId, latitude, longitude);
           navigate("/feedback");
         },
@@ -53,7 +61,6 @@ const Emotion = () => {
           alert("Unable to retrieve your location");
         }
       );
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
       alert("An error occurred during check-out");
     } finally {
