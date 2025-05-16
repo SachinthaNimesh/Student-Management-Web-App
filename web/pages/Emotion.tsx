@@ -62,7 +62,7 @@ const Emotion = () => {
         }
       );
     } catch (error) {
-      alert("An error occurred during check-out");
+      alert("An error occurred during check-out: " + error);
     } finally {
       setLoading(false);
     }

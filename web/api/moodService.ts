@@ -21,7 +21,7 @@ export function useMoodService() {
     const sendMood = useCallback(async (student_id: number, emotion: string, is_daily: boolean): Promise<void> => {
         console.log('sendMood input:', { student_id, emotion, is_daily });
         try {
-            const response = await fetch(`${API_URL}/moods/`, { 
+            const response = await fetch(`${API_URL}/moods`, { 
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
