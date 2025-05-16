@@ -1,11 +1,4 @@
 import { useState, useEffect } from "react";
-
-// Extend the Window interface to include the deviceId property
-declare global {
-  interface Window {
-    deviceId?: number;
-  }
-}
 import { useNavigate } from "react-router-dom";
 import { postCheckinById } from "../api/attendanceService";
 import React from "react";
@@ -14,7 +7,7 @@ import { GOOGLE_API_KEY } from "../config/config";
 import { CSSProperties } from "react";
 import axios from "axios";
 
-
+import { getStudentById } from "../api/locationService"; //test
 
 const CheckInScreen = () => {
   const [loading, setLoading] = useState(false);
@@ -126,69 +119,19 @@ const CheckInScreen = () => {
     updateDateTime();
   }, []);
   
-//<test>
-const [deviceId, setDeviceId] = useState<number | null>(null);
 
-  useEffect(() => {
-    // Function to check for deviceId
-    const checkForDeviceId = () => {
-      // If deviceId exists in window object
-      if (window.deviceId) {
-        setDeviceId(window.deviceId);
-
-      } else {
-        // If not found, check again after a short delay
-        setTimeout(checkForDeviceId, 500);
-      }
-    };
-
-    // Start checking for deviceId
-    checkForDeviceId();
-
-    // Set up a listener for future deviceId updates
-    let intervalId: number;
-
-    const handleDeviceIdChange = () => {
-      intervalId = window.setInterval(() => {
-        if (window.deviceId && window.deviceId !== deviceId) {
-          setDeviceId(window.deviceId);
-          clearInterval(intervalId);
-        }
-      }, 500);
-    };
-
-    window.addEventListener('message', (event) => {
-      // Check if the message contains deviceId updates
-      if (event.data && event.data.type === 'deviceIdUpdate') {
-        setDeviceId(event.data.deviceId);
-      }
-    });
-
-    handleDeviceIdChange();
-    
-    return () => {
-      clearInterval(intervalId);
-      window.removeEventListener('message', (event) => {
-        if (event.data && event.data.type === 'deviceIdUpdate') {
-          setDeviceId(event.data.deviceId);
-        }
-      });
-    };
-  }, [deviceId]);
-
-  // Example function that uses the deviceId
-  const performActionWithDeviceId = () => {
-    if (deviceId) {
-      console.log(`Performing action with Device ID: ${deviceId}`);
-      // Add your logic here that uses the deviceId
-      alert(`Action performed with Device ID: ${deviceId}`);
-    }
-  };
-
-// <test/>
   const handleCheckIn = async () => {
     try {
       setLoading(true);
+
+      console.log('Fetching student ID...'); //test
+      const deviceId = await getStudentById(); //test
+      if (deviceId !== null) {
+        console.log(`Device ID = Student ID: ${deviceId}`);
+      } else {
+        console.log('Student ID could not be retrieved.');
+      }
+      // ...existing code...
 
       const studentId = 1; // Replace this with actual logic to fetch student ID
       if (!userLocation || !latitude || !longitude) {
@@ -228,12 +171,7 @@ const [deviceId, setDeviceId] = useState<number | null>(null);
       <p style={styles.infoText}>
         📍 {userLocation || "Waiting for location..."}
       </p>
-      {/* test */}
-      <p>
-        Connected Device ID: {deviceId !== null ? deviceId : "Not available"}
-        <button
-        onClick={performActionWithDeviceId}>Perform action with device ID</button>
-      </p>
+
       <button
         style={styles.btn}
         onClick={(event) => {
