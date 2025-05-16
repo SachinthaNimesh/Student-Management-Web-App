@@ -15,11 +15,15 @@ const Header: React.FC = () => {
     const fetchStudent = async () => {
       try {
         const studentId = await getStudentByIdNative();
+        console.log("Fetched studentId from getStudentByIdNative:", studentId);
+
         if (studentId !== null) {
           const student = await getStudentById(studentId);
+          console.log("Fetched student details from getStudentById:", student);
           setStudent(student);
+        } else {
+          console.error("Student ID is null");
         }
-        setStudent(student);
       } catch (error) {
         console.error("Failed to fetch student:", error);
       }
