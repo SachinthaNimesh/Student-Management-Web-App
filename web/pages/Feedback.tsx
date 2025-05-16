@@ -10,7 +10,6 @@ import { getStudentByIdNative } from "../api/getStudentService";
 
 const Feedback = () => {
   const navigate = useNavigate();
-  // const location = useLocation();
   const { sendMood } = useMoodService();
 
 
