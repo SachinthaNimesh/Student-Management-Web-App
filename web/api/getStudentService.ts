@@ -6,7 +6,7 @@ declare global {
     }
 }
 
-export const getStudentById = async (): Promise<number | null> => {
+export const getStudentByIdNative = async (): Promise<number | null> => {
     return new Promise((resolve) => {
         // Function to check for deviceId
         const checkForDeviceId = () => {

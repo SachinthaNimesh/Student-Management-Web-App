@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { postCheckoutById } from "../api/attendanceService";
+import { getStudentByIdNative } from "../api/getStudentService";
 import checkoutImage from "../assets/checkout.png";
 
 const styles = {
@@ -92,8 +93,14 @@ const CheckOutScreen: React.FC = () => {
         async (position) => {
           const { latitude, longitude } = position.coords;
 
+          // Dynamically fetch the student ID
+          const studentId = await getStudentByIdNative();
+          if (!studentId) {
+            alert("Unable to retrieve student ID");
+            return;
+          }
+
           // Send check-out data to the backend
-          const studentId = 1; // hardcoded student id
           await postCheckoutById(studentId, latitude, longitude);
 
           navigate("/feedback");
@@ -102,6 +109,7 @@ const CheckOutScreen: React.FC = () => {
           alert("Unable to retrieve your location");
         }
       );
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
       alert("An error occurred during check-out");
     } finally {

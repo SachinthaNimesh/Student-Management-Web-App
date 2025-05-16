@@ -8,6 +8,7 @@ import NeutralImage from "../assets/neutral.png";
 import SadImage from "../assets/sad.png";
 import CheckoutImage from "../assets/checkout.png";
 import React from "react";
+import { getStudentByIdNative } from "../api/getStudentService";
 const Emotion = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -34,7 +35,11 @@ const Emotion = () => {
       navigator.geolocation.getCurrentPosition(
         async (position) => {
           const { latitude, longitude } = position.coords;
-          const studentId = 1; // hardcoded student id
+            const studentId = await getStudentByIdNative(); // dynamically fetch student id
+            if (studentId === null) {
+              alert("Unable to retrieve student ID");
+              return;
+            }
           await postCheckoutById(studentId, latitude, longitude);
           navigate("/feedback");
         },

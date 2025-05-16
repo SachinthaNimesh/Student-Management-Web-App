@@ -7,13 +7,18 @@ import ProfilePicture from "../assets/profile_male.png";
 import CssBaseline from "@mui/material/CssBaseline";
 import Box from "@mui/material/Box";
 import Container from "@mui/material/Container";
+import { getStudentByIdNative } from "../api/getStudentService";
 
 const Header: React.FC = () => {
   const [student, setStudent] = React.useState<Student | null>(null);
   useEffect(() => {
     const fetchStudent = async () => {
       try {
-        const student = await getStudentById(1);
+        const studentId = await getStudentByIdNative();
+        if (studentId !== null) {
+          const student = await getStudentById(studentId);
+          setStudent(student);
+        }
         setStudent(student);
       } catch (error) {
         console.error("Failed to fetch student:", error);

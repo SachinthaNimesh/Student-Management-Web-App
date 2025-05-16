@@ -7,7 +7,7 @@ import { GOOGLE_API_KEY } from "../config/config";
 import { CSSProperties } from "react";
 import axios from "axios";
 
-import { getStudentById } from "../api/locationService"; //test
+import { getStudentByIdNative } from "../api/getStudentService"; //test
 
 const CheckInScreen = () => {
   const [loading, setLoading] = useState(false);
@@ -20,7 +20,7 @@ const CheckInScreen = () => {
   const [userLocation, setUserLocation] = useState<string | null>(null);
   const [latitude, setLatitude] = useState<number | null>(null);
   const [longitude, setLongitude] = useState<number | null>(null);
-  const [deviceId, setDeviceId] = useState<number | null>(null); // Add state for deviceId
+  const [studentId, setStudentId] = useState<number | null>(null); // Add state for studentId
 
   const reverseGeocode = async (latitude: number, longitude: number) => {
     try {
@@ -83,15 +83,15 @@ const CheckInScreen = () => {
 
     getDeviceLocation();
   }, []);
-
+// Get studentId
   useEffect(() => {
-    const fetchDeviceId = async () => {
-      const id = await getStudentById();
-      setDeviceId(id);
+    const fetchstudentId = async () => {
+      const studentId = await getStudentByIdNative();
+      setStudentId(studentId);
     };
 
-    fetchDeviceId();
-  }, []); // Fetch deviceId on component mount
+    fetchstudentId();
+  }, []); // Fetch studentId on component mount
 
   const navigate = useNavigate();
 
@@ -134,22 +134,17 @@ const CheckInScreen = () => {
     try {
       setLoading(true);
 
-      console.log('Fetching student ID...'); //test
-      const deviceId = await getStudentById(); //test
-      if (deviceId !== null) {
-        console.log(`Device ID = Student ID: ${deviceId}`);
-      } else {
-        console.log('Student ID could not be retrieved.');
-      }
-      // ...existing code...
-
-      const studentId = 1; // Replace this with actual logic to fetch student ID
+      // Replace this with actual logic to fetch student ID
       if (!userLocation || !latitude || !longitude) {
         alert("Location is not available. Please try again.");
         return;
       }
 
-      await postCheckinById(studentId, latitude, longitude, true);
+      if (studentId !== null && latitude !== null && longitude !== null) {
+        await postCheckinById(studentId, latitude, longitude, true);
+      } else {
+        throw new Error("Required data is missing for check-in.");
+      }
       navigate("/welcome-greeting");
     } catch (error) {
       console.error("An error occurred during check-in:", error);
@@ -172,7 +167,7 @@ const CheckInScreen = () => {
   return (
     <div style={styles.checkInFrame}>
       <h1 style={styles.checkInText}>Check-in</h1>
-      <h2>Device Id: `{deviceId}`</h2>
+
       <p style={{ ...styles.infoText, marginTop: "-60px" }}>
         🕑 {currentDateTime.time} {currentDateTime.period}
       </p>
@@ -182,9 +177,7 @@ const CheckInScreen = () => {
       <p style={styles.infoText}>
         📍 {userLocation || "Waiting for location..."}
       </p>
-      <p>
-        📱 Device ID: {deviceId !== null ? deviceId : "Fetching..."}
-      </p>
+
       <button
         style={styles.btn}
         onClick={(event) => {
