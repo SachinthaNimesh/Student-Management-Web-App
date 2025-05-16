@@ -20,6 +20,7 @@ const CheckInScreen = () => {
   const [userLocation, setUserLocation] = useState<string | null>(null);
   const [latitude, setLatitude] = useState<number | null>(null);
   const [longitude, setLongitude] = useState<number | null>(null);
+  const [deviceId, setDeviceId] = useState<number | null>(null); // Add state for deviceId
 
   const reverseGeocode = async (latitude: number, longitude: number) => {
     try {
@@ -82,6 +83,15 @@ const CheckInScreen = () => {
 
     getDeviceLocation();
   }, []);
+
+  useEffect(() => {
+    const fetchDeviceId = async () => {
+      const id = await getStudentById();
+      setDeviceId(id);
+    };
+
+    fetchDeviceId();
+  }, []); // Fetch deviceId on component mount
 
   const navigate = useNavigate();
 
@@ -162,6 +172,7 @@ const CheckInScreen = () => {
   return (
     <div style={styles.checkInFrame}>
       <h1 style={styles.checkInText}>Check-in</h1>
+      <h2>Device Id: `{deviceId}`</h2>
       <p style={{ ...styles.infoText, marginTop: "-60px" }}>
         🕑 {currentDateTime.time} {currentDateTime.period}
       </p>
@@ -171,7 +182,9 @@ const CheckInScreen = () => {
       <p style={styles.infoText}>
         📍 {userLocation || "Waiting for location..."}
       </p>
-
+      <p>
+        📱 Device ID: {deviceId !== null ? deviceId : "Fetching..."}
+      </p>
       <button
         style={styles.btn}
         onClick={(event) => {
