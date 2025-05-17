@@ -1,4 +1,4 @@
-import React, { useEffect,useState } from "react";
+import React, { useEffect } from "react";
 import RealTimeClock from "../components/RealTimeClock";
 import { getStudentById } from "../api/studentService";
 import { Student } from "../types/student";
@@ -7,59 +7,24 @@ import ProfilePicture from "../assets/profile_male.png";
 import CssBaseline from "@mui/material/CssBaseline";
 import Box from "@mui/material/Box";
 import Container from "@mui/material/Container";
-<<<<<<< HEAD
-// import { validateBearerToken } from "../api/bearerService";
 
 const Header: React.FC = () => {
   const [student, setStudent] = React.useState<Student | null>(null);
-  const [token, setToken] = React.useState<string | null>(null);
-=======
-import { getStudentByIdNative } from "../api/getStudentService";
-
-const Header: React.FC = () => {
-  const [student, setStudent] = React.useState<Student | null>(null);
-  const [studentId, setStudentId] = useState<number | null>(null);
-
-  useEffect(() => {
-    const fetchstudentId = async () => {
-      const studentId = await getStudentByIdNative();
-      setStudentId(studentId);
-      console.log("Fetched studentId from getStudentByIdNative:", studentId);
-    };
-
-    fetchstudentId();
-  }, []); // Fetch studentId on component mount
->>>>>>> 4edc486f94f2f238efb3acbfbb46c9847895d8a1
 
   useEffect(() => {
     const fetchStudent = async () => {
       try {
-        if (studentId !== null) {
-          const student = await getStudentById(studentId);
-          console.log("Fetched student details from getStudentById:", student);
-          setStudent(student);
-        } else {
-          console.error("Student ID is null");
-        }
+        const studentId = 2; // Hardcoded student ID
+        const student = await getStudentById(studentId);
+        console.log("Fetched student details from getStudentById:", student);
+        setStudent(student);
       } catch (error) {
         console.error("Failed to fetch student:", error);
       }
     };
 
-    const fetchToken = () => {
-      // Simulate fetching the token from the request object
-      const authHeader = document.cookie.split("; ").find(row => row.startsWith("Authorization="));
-      const token = authHeader ? authHeader.split("=")[1] : null;
-      setToken(token);
-    };
-
     fetchStudent();
-<<<<<<< HEAD
-    fetchToken();
-  }, []);
-=======
-  }, [studentId]); // Fetch student details when studentId changes
->>>>>>> 4edc486f94f2f238efb3acbfbb46c9847895d8a1
+  }, []); // Fetch student details on component mount
 
   return (
     <React.Fragment>
@@ -96,9 +61,6 @@ const Header: React.FC = () => {
                 Hi {student ? student.first_name : "!"} 👋
               </h1>
               <RealTimeClock />
-              <p style={{ fontSize: "0.8rem", color: "gray" }}>
-                Token: {token || "No token available"}
-              </p>
             </Box>
             <Box>
               <img
