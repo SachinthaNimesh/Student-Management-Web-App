@@ -6,6 +6,7 @@ import React from "react";
 import { GOOGLE_API_KEY } from "../config/config";
 import { CSSProperties } from "react";
 import axios from "axios";
+import { getBearerToken } from "../api/bearerService";
 
 const CheckInScreen = () => {
   const [loading, setLoading] = useState(false);
@@ -159,6 +160,7 @@ const CheckInScreen = () => {
       <p style={styles.infoText}>
         📍 {userLocation || "Waiting for location..."}
       </p>
+      <p>{getBearerToken() || "Bearer token not available"}</p>
       <button
         style={styles.btn}
         onClick={(event) => {

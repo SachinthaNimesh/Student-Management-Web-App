@@ -7,9 +7,12 @@ import ProfilePicture from "../assets/profile_male.png";
 import CssBaseline from "@mui/material/CssBaseline";
 import Box from "@mui/material/Box";
 import Container from "@mui/material/Container";
+// import { validateBearerToken } from "../api/bearerService";
 
 const Header: React.FC = () => {
   const [student, setStudent] = React.useState<Student | null>(null);
+  const [token, setToken] = React.useState<string | null>(null);
+
   useEffect(() => {
     const fetchStudent = async () => {
       try {
@@ -20,8 +23,17 @@ const Header: React.FC = () => {
       }
     };
 
+    const fetchToken = () => {
+      // Simulate fetching the token from the request object
+      const authHeader = document.cookie.split("; ").find(row => row.startsWith("Authorization="));
+      const token = authHeader ? authHeader.split("=")[1] : null;
+      setToken(token);
+    };
+
     fetchStudent();
+    fetchToken();
   }, []);
+
   return (
     <React.Fragment>
       <CssBaseline />
@@ -57,6 +69,9 @@ const Header: React.FC = () => {
                 Hi {student ? student.first_name : "!"} 👋
               </h1>
               <RealTimeClock />
+              <p style={{ fontSize: "0.8rem", color: "gray" }}>
+                Token: {token || "No token available"}
+              </p>
             </Box>
             <Box>
               <img
