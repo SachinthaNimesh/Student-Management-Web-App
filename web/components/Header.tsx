@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect,useState } from "react";
 import RealTimeClock from "../components/RealTimeClock";
 import { getStudentById } from "../api/studentService";
 import { Student } from "../types/student";
@@ -7,17 +7,40 @@ import ProfilePicture from "../assets/profile_male.png";
 import CssBaseline from "@mui/material/CssBaseline";
 import Box from "@mui/material/Box";
 import Container from "@mui/material/Container";
+<<<<<<< HEAD
 // import { validateBearerToken } from "../api/bearerService";
 
 const Header: React.FC = () => {
   const [student, setStudent] = React.useState<Student | null>(null);
   const [token, setToken] = React.useState<string | null>(null);
+=======
+import { getStudentByIdNative } from "../api/getStudentService";
+
+const Header: React.FC = () => {
+  const [student, setStudent] = React.useState<Student | null>(null);
+  const [studentId, setStudentId] = useState<number | null>(null);
+
+  useEffect(() => {
+    const fetchstudentId = async () => {
+      const studentId = await getStudentByIdNative();
+      setStudentId(studentId);
+      console.log("Fetched studentId from getStudentByIdNative:", studentId);
+    };
+
+    fetchstudentId();
+  }, []); // Fetch studentId on component mount
+>>>>>>> 4edc486f94f2f238efb3acbfbb46c9847895d8a1
 
   useEffect(() => {
     const fetchStudent = async () => {
       try {
-        const student = await getStudentById(1);
-        setStudent(student);
+        if (studentId !== null) {
+          const student = await getStudentById(studentId);
+          console.log("Fetched student details from getStudentById:", student);
+          setStudent(student);
+        } else {
+          console.error("Student ID is null");
+        }
       } catch (error) {
         console.error("Failed to fetch student:", error);
       }
@@ -31,8 +54,12 @@ const Header: React.FC = () => {
     };
 
     fetchStudent();
+<<<<<<< HEAD
     fetchToken();
   }, []);
+=======
+  }, [studentId]); // Fetch student details when studentId changes
+>>>>>>> 4edc486f94f2f238efb3acbfbb46c9847895d8a1
 
   return (
     <React.Fragment>

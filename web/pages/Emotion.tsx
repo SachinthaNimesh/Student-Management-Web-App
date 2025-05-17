@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { useMoodService } from "../api/moodService";
 import { postCheckoutById } from "../api/attendanceService";
 import { CSSProperties } from "react";
@@ -8,43 +8,70 @@ import NeutralImage from "../assets/neutral.png";
 import SadImage from "../assets/sad.png";
 import CheckoutImage from "../assets/checkout.png";
 import React from "react";
+import { getStudentByIdNative } from "../api/getStudentService";
+
 const Emotion = () => {
   const [loading, setLoading] = useState(false);
+  const [studentId, setStudentId] = useState<number | null>(null); // Moved useState here
   const navigate = useNavigate();
-  const location = useLocation();
   const { sendMood } = useMoodService();
-  const student_id = location.state?.student_id || 1;
+
+  useEffect(() => {
+    const fetchstudentId = async () => {
+      const studentId = await getStudentByIdNative();
+      setStudentId(studentId);
+      console.log("Fetched studentId from getStudentByIdNative:", studentId);
+    };
+
+    fetchstudentId();
+  }, []); // Fetch studentId on component mount
 
   const handleMoodPress = async (emotion: string, isDaily: boolean) => {
     try {
-      await sendMood(student_id, emotion, isDaily);
+      if (studentId === null) {
+        alert("Unable to retrieve student ID");
+        console.error("Error: studentId is null in handleMoodPress");
+        return;
+      }
+      console.log(`Sending mood: ${emotion}, isDaily: ${isDaily}, studentId: ${studentId}`);
+      await sendMood(studentId, emotion, isDaily);
+      console.log("Mood sent successfully");
     } catch (error) {
-      console.error(error);
+      console.error("Error in handleMoodPress:", error);
     }
   };
 
   const handleCheckOut = async () => {
     try {
       setLoading(true);
+      if (studentId === null) {
+        alert("Unable to retrieve student ID");
+        console.error("Error: studentId is null in handleCheckOut");
+        return;
+      }
       if (!navigator.geolocation) {
         alert("Geolocation is not supported by your browser");
+        console.error("Error: Geolocation not supported");
         return;
       }
 
+      console.log("Attempting to get geolocation...");
       navigator.geolocation.getCurrentPosition(
         async (position) => {
           const { latitude, longitude } = position.coords;
-          const studentId = 1; // hardcoded student id
+          console.log(`Geolocation retrieved: latitude=${latitude}, longitude=${longitude}`);
           await postCheckoutById(studentId, latitude, longitude);
+          console.log("Checkout successful");
           navigate("/feedback");
         },
-        () => {
+        (error) => {
           alert("Unable to retrieve your location");
+          console.error("Error retrieving geolocation:", error);
         }
       );
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
-      alert("An error occurred during check-out");
+      alert("An error occurred during check-out: " + error);
+      console.error("Error in handleCheckOut:", error);
     } finally {
       setLoading(false);
     }

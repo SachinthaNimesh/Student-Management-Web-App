@@ -19,6 +19,7 @@ const CheckInScreen = () => {
   const [userLocation, setUserLocation] = useState<string | null>(null);
   const [latitude, setLatitude] = useState<number | null>(null);
   const [longitude, setLongitude] = useState<number | null>(null);
+  const [studentId, setStudentId] = useState<number | null>(null); // Add state for studentId
 
   const reverseGeocode = async (latitude: number, longitude: number) => {
     try {
@@ -81,6 +82,15 @@ const CheckInScreen = () => {
 
     getDeviceLocation();
   }, []);
+// Get studentId
+  useEffect(() => {
+    const fetchstudentId = async () => {
+      const studentId = await getStudentByIdNative();
+      setStudentId(studentId);
+    };
+
+    fetchstudentId();
+  }, []); // Fetch studentId on component mount
 
   const navigate = useNavigate();
 
@@ -117,18 +127,23 @@ const CheckInScreen = () => {
 
     updateDateTime();
   }, []);
+  
 
   const handleCheckIn = async () => {
     try {
       setLoading(true);
 
-      const studentId = 1; // Replace this with actual logic to fetch student ID
+      // Replace this with actual logic to fetch student ID
       if (!userLocation || !latitude || !longitude) {
         alert("Location is not available. Please try again.");
         return;
       }
 
-      await postCheckinById(studentId, latitude, longitude, true);
+      if (studentId !== null && latitude !== null && longitude !== null) {
+        await postCheckinById(studentId, latitude, longitude, true);
+      } else {
+        throw new Error("Required data is missing for check-in.");
+      }
       navigate("/welcome-greeting");
     } catch (error) {
       console.error("An error occurred during check-in:", error);
@@ -151,6 +166,7 @@ const CheckInScreen = () => {
   return (
     <div style={styles.checkInFrame}>
       <h1 style={styles.checkInText}>Check-in</h1>
+
       <p style={{ ...styles.infoText, marginTop: "-60px" }}>
         🕑 {currentDateTime.time} {currentDateTime.period}
       </p>
@@ -175,6 +191,7 @@ const CheckInScreen = () => {
           <span style={styles.btnText}>Check in</span>
         )}
       </button>
+      
     </div>
   );
 };

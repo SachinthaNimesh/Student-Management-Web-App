@@ -1,19 +1,27 @@
-import { useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { useMoodService } from "../api/moodService";
 import { CSSProperties } from "react";
 import happyImage from "../assets/happy.png";
 import neutralImage from "../assets/neutral.png";
 import sadImage from "../assets/sad.png";
-import React from "react";
+import { getStudentByIdNative } from "../api/getStudentService";
 
 const Feedback = () => {
   const navigate = useNavigate();
-  const location = useLocation();
   const { sendMood } = useMoodService();
-  const student_id = location.state?.student_id || 1;
-
   const [clickedButton, setClickedButton] = useState<string | null>(null);
+  const [studentId, setStudentId] = useState<number | null>(null);
+
+  useEffect(() => {
+    const fetchstudentId = async () => {
+      const studentId = await getStudentByIdNative();
+      setStudentId(studentId);
+      console.log("Fetched studentId from getStudentByIdNative:", studentId);
+    };
+
+    fetchstudentId();
+  }, []); // Fetch studentId on component mount
 
   const handleButtonAnimation = (
     event: React.MouseEvent<HTMLButtonElement>
@@ -33,7 +41,11 @@ const Feedback = () => {
     handleButtonAnimation(event); // Apply button animation
     setClickedButton(emotion); // Set the clicked button for animation
     try {
-      await sendMood(student_id, emotion, isDaily);
+      if (studentId === null) {
+        alert("Unable to retrieve student ID");
+        return;
+      }
+      await sendMood(studentId, emotion, isDaily);
       setTimeout(() => navigate("/checkout-greeting"), 500); // Delay navigation to allow animation
     } catch (error) {
       console.error(error);
