@@ -85,7 +85,7 @@ const CheckInScreen = () => {
 // Get studentId
   useEffect(() => {
     const fetchstudentId = async () => {
-      const studentId = await getStudentByIdNative();
+      const studentId = 2;
       setStudentId(studentId);
     };
 

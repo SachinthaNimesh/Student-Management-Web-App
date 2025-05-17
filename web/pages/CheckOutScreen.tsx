@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { postCheckoutById } from "../api/attendanceService";
-import { getStudentByIdNative } from "../api/getStudentService";
 import checkoutImage from "../assets/checkout.png";
 
 const CheckOutScreen: React.FC = () => {
@@ -11,7 +10,7 @@ const CheckOutScreen: React.FC = () => {
 
   useEffect(() => {
     const fetchstudentId = async () => {
-      const studentId = await getStudentByIdNative();
+      const studentId = 2;
       setStudentId(studentId);
       console.log("Fetched studentId from getStudentByIdNative:", studentId);
     };

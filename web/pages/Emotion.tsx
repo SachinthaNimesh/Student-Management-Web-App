@@ -8,8 +8,7 @@ import NeutralImage from "../assets/neutral.png";
 import SadImage from "../assets/sad.png";
 import CheckoutImage from "../assets/checkout.png";
 import React from "react";
-import { getStudentByIdNative } from "../api/getStudentService";
-import { getStudentById } from "../api/studentService";
+
 
 const Emotion = () => {
   const [loading, setLoading] = useState(false);
