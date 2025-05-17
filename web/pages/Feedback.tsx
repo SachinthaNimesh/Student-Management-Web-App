@@ -5,7 +5,6 @@ import { CSSProperties } from "react";
 import happyImage from "../assets/happy.png";
 import neutralImage from "../assets/neutral.png";
 import sadImage from "../assets/sad.png";
-import { getStudentByIdNative } from "../api/getStudentService";
 
 const Feedback = () => {
   const navigate = useNavigate();
@@ -15,7 +14,7 @@ const Feedback = () => {
 
   useEffect(() => {
     const fetchstudentId = async () => {
-      const studentId = await getStudentByIdNative();
+      const studentId = 2;
       setStudentId(studentId);
       console.log("Fetched studentId from getStudentByIdNative:", studentId);
     };
