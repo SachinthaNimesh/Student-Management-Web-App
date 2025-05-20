@@ -1,23 +1,7 @@
 import { useCallback } from "react";
-import { Mood } from "../types/mood";
 import { API_URL } from "../config/config";
 
 export function useMoodService() {
-    const getMood = useCallback(async (id: number): Promise<Mood> => {
-        const response = await fetch(`${API_URL}/get-mood`, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-        });
-
-        if (!response.ok) {
-            throw new Error('Failed to fetch mood data');
-        }
-
-        return response.json();
-    }, []);
-
     const sendMood = useCallback(async (student_id: number, emotion: string, is_daily: boolean): Promise<void> => {
         console.log('sendMood input:', { student_id, emotion, is_daily });
         try {
@@ -46,5 +30,5 @@ export function useMoodService() {
         }
     }, []);
 
-    return { getMood, sendMood };
+    return { sendMood };
 }
