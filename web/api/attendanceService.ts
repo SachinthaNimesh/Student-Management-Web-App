@@ -1,25 +1,30 @@
 import axios from 'axios';
-import { API_URL } from '../config/config';
+import { API_URL, TEST_KEY } from '../config/config';
 import { AxiosResponse } from 'axios';
 import type { AxiosError } from 'axios';
 
-export const postCheckinById = async (id: number, latitude: number, longitude: number, checkIn: boolean): Promise<any> => {
+export const postCheckinById = async (id: number, latitude: number, longitude: number, checkIn: boolean): Promise<unknown> => {
     try {
+        console.log(`Check-in ID: ${id}`); // Log the ID
         const requestData = {
             check_in: checkIn,
             check_in_lat: latitude,
             check_in_long: longitude,
         };
         
-        console.log(`Sending request to: ${API_URL}/attendance/${id}`);
+        console.log(`Sending request to: ${API_URL}/attendance`);
         console.log('Request data:', requestData);
         
         const response: AxiosResponse = await axios.post(
-            `${API_URL}/attendance/${id}`, 
+            `${API_URL}/attendance`, 
             requestData,
             { 
                 timeout: 10000,  // 10 second timeout
-                headers: { 'Content-Type': 'application/json' }
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Student-ID': '5', // Include Student-ID in headers
+                    'Test-Key': TEST_KEY // Use TEST_KEY from environment
+                }
             }
         );
         
@@ -56,23 +61,28 @@ export const postCheckinById = async (id: number, latitude: number, longitude: n
     }
 };
 
-export const postCheckoutById = async (id: number, latitude: number, longitude: number): Promise<any> => {
+export const postCheckoutById = async (id: number, latitude: number, longitude: number): Promise<{ success: boolean; message: string; data?: Record<string, unknown> }> => {
     try {
+        console.log(`Check-out ID: ${id}`); // Log the ID
         const requestData = {
             check_in: false,
             check_in_lat: latitude,
             check_in_long: longitude,
         };
         
-        console.log(`Sending request to: ${API_URL}/attendance/${id}`);
+        console.log(`Sending request to: ${API_URL}/attendance`);
         console.log('Request data:', requestData);
         
         const response: AxiosResponse = await axios.post(
-            `${API_URL}/attendance/${id}`, 
+            `${API_URL}/attendance`, 
             requestData,
             { 
                 timeout: 10000,  // 10 second timeout
-                headers: { 'Content-Type': 'application/json' }
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Student-ID': '5', // Include Student-ID in headers
+                    'Test-Key': TEST_KEY // Use TEST_KEY from environment
+                }
             }
         );
         
