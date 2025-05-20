@@ -4,7 +4,7 @@ import { API_URL } from "../config/config";
 
 export function useMoodService() {
     const getMood = useCallback(async (id: number): Promise<Mood> => {
-        const response = await fetch(`${API_URL}/moods/${id}`, {
+        const response = await fetch(`${API_URL}/get-mood`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -21,13 +21,13 @@ export function useMoodService() {
     const sendMood = useCallback(async (student_id: number, emotion: string, is_daily: boolean): Promise<void> => {
         console.log('sendMood input:', { student_id, emotion, is_daily });
         try {
-            const response = await fetch(`${API_URL}/moods/`, { 
+            const response = await fetch(`${API_URL}/post-mood`, { 
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'Student-ID': student_id.toString() // Include student_id in headers
                 },
                 body: JSON.stringify({
-                    student_id,
                     emotion,
                     is_daily
                 }),
