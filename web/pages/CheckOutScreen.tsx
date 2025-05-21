@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { postCheckoutById } from "../api/attendanceService";
 import checkoutImage from "../assets/checkout.png";
+import { getStudentDataFromBridge } from "../api/bridgingService";
 
 const styles = {
   flexBox: {
@@ -93,8 +94,18 @@ const CheckOutScreen: React.FC = () => {
           const { latitude, longitude } = position.coords;
 
           // Send check-out data to the backend
-          const studentId = 1; // hardcoded student id
-          await postCheckoutById(studentId, latitude, longitude);
+            const studentData = getStudentDataFromBridge();
+            if (!studentData) {
+            alert("Student data is not available.");
+            return;
+            }
+            const { student_id: studentId } = studentData;
+            const numericStudentId = Number(studentId);
+            if (isNaN(numericStudentId)) {
+              alert("Invalid student ID.");
+              return;
+            }
+          await postCheckoutById(numericStudentId, latitude, longitude);
 
           navigate("/feedback");
         },

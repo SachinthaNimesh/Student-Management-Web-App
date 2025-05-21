@@ -8,6 +8,7 @@ import NeutralImage from "../assets/neutral.png";
 import SadImage from "../assets/sad.png";
 import CheckoutImage from "../assets/checkout.png";
 import React from "react";
+import { getStudentDataFromBridge } from "../api/bridgingService";
 const Emotion = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -34,7 +35,8 @@ const Emotion = () => {
       navigator.geolocation.getCurrentPosition(
         async (position) => {
           const { latitude, longitude } = position.coords;
-          const studentId = 1; // hardcoded student id
+            const studentData = getStudentDataFromBridge();
+          const studentId = studentData ? Number(studentData.student_id) : 1; // fallback to 1 if studentData is unavailable
           await postCheckoutById(studentId, latitude, longitude);
           navigate("/feedback");
         },

@@ -1,18 +1,21 @@
 import { useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useMoodService } from "../api/moodService";
 import { CSSProperties } from "react";
 import happyImage from "../assets/happy.png";
 import neutralImage from "../assets/neutral.png";
 import sadImage from "../assets/sad.png";
 import React from "react";
+import { getStudentDataFromBridge } from "../api/bridgingService";
 
 const Feedback = () => {
   const navigate = useNavigate();
-  const location = useLocation();
   const { sendMood } = useMoodService();
-  const student_id = location.state?.student_id || 1;
-
+  const studentData = getStudentDataFromBridge();
+  if (!studentData?.student_id) {
+    throw new Error("Student ID is not available.");
+  }
+  const student_id = Number(studentData.student_id);
   const [clickedButton, setClickedButton] = useState<string | null>(null);
 
   const handleButtonAnimation = (

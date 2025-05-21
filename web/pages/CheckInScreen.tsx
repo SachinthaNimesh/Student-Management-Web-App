@@ -6,6 +6,7 @@ import React from "react";
 import { GOOGLE_API_KEY } from "../config/config";
 import { CSSProperties } from "react";
 import axios from "axios";
+import { getStudentDataFromBridge } from "../api/bridgingService";
 
 const CheckInScreen = () => {
   const [loading, setLoading] = useState(false);
@@ -121,13 +122,20 @@ const CheckInScreen = () => {
     try {
       setLoading(true);
 
-      const studentId = 1; // Replace this with actual logic to fetch student ID
+      const studentData = getStudentDataFromBridge();
+      if (!studentData || !studentData.student_id) {
+        alert("Student data is not available. Please try again.");
+        return;
+      }
+
+      const student_id = Number(studentData.student_id);
+
       if (!userLocation || !latitude || !longitude) {
         alert("Location is not available. Please try again.");
         return;
       }
 
-      await postCheckinById(studentId, latitude, longitude, true);
+      await postCheckinById(student_id, latitude, longitude, true); 
       navigate("/welcome-greeting");
     } catch (error) {
       console.error("An error occurred during check-in:", error);

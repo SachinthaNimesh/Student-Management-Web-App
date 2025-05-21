@@ -1,9 +1,19 @@
 import axios from 'axios';
-import { API_URL, API_KEY } from '../config/config';
+import { API_URL } from '../config/config';
 import { AxiosResponse } from 'axios';
 import type { AxiosError } from 'axios';
+import { getStudentDataFromBridge } from './bridgingService';
+
+
 
 export const postCheckinById = async (id: number, latitude: number, longitude: number, checkIn: boolean): Promise<unknown> => {
+    const studentData = getStudentDataFromBridge();
+    if (!studentData) {
+        alert("Student data is not available.");
+        return;
+    }
+    const { API_KEY } = studentData;
+
     try {
         console.log(`Check-in ID: ${id}`); // Log the ID
         const requestData = {
@@ -23,7 +33,7 @@ export const postCheckinById = async (id: number, latitude: number, longitude: n
                 headers: { 
                     'Content-Type': 'application/json',
                     'student-id': id, // Match Student-ID from curl request
-                    'api-key': API_KEY // Ensure API_KEY is used correctly
+                    'api-key': API_KEY // Use API_KEY from student data
                 }
             }
         );
@@ -62,6 +72,13 @@ export const postCheckinById = async (id: number, latitude: number, longitude: n
 };
 
 export const postCheckoutById = async (id: number, latitude: number, longitude: number): Promise<{ success: boolean; message: string; data?: Record<string, unknown> }> => {
+    const studentData = getStudentDataFromBridge();
+    if (!studentData) {
+        alert("Student data is not available.");
+        return { success: false, message: "Student data is not available." };
+    }
+    const { API_KEY } = studentData;
+
     try {
         console.log(`Check-out ID: ${id}`); // Log the ID
         const requestData = {
@@ -81,7 +98,7 @@ export const postCheckoutById = async (id: number, latitude: number, longitude: 
                 headers: { 
                     'Content-Type': 'application/json',
                     'student-id': id, 
-                    'api-key': API_KEY 
+                    'api-key': API_KEY // Use API_KEY from student data
                 }
             }
         );
