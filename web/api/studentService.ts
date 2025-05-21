@@ -7,7 +7,7 @@ export const getStudentById = async (id: number): Promise<Student | null> => {
         const response: AxiosResponse<Student> = await axios.get(`${API_URL}/get-student`, {
             headers: {
                 'Content-Type': 'application/json',
-                'testkey': TEST_KEY, 
+                'Test-Key': TEST_KEY, 
                 'student-id': id 
             },
         });

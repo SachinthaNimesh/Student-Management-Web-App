@@ -23,7 +23,7 @@ export const postCheckinById = async (id: number, latitude: number, longitude: n
                 headers: { 
                     'Content-Type': 'application/json',
                     'student-id': id, // Match Student-ID from curl request
-                    'testkey': TEST_KEY // Ensure TEST_KEY is used correctly
+                    'Test-Key': TEST_KEY // Ensure TEST_KEY is used correctly
                 }
             }
         );
