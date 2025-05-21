@@ -33,11 +33,11 @@ const Feedback = () => {
     isDaily: boolean,
     event: React.MouseEvent<HTMLButtonElement>
   ) => {
-    handleButtonAnimation(event); // Apply button animation
-    setClickedButton(emotion); // Set the clicked button for animation
+    handleButtonAnimation(event);
+    setClickedButton(emotion); 
     try {
       await sendMood(student_id, emotion, isDaily);
-      setTimeout(() => navigate("/checkout-greeting"), 500); // Delay navigation to allow animation
+      setTimeout(() => navigate("/checkout-greeting"), 2000); 
     } catch (error) {
       console.error(error);
     }

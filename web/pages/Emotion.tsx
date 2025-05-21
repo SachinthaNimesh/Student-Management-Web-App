@@ -12,13 +12,17 @@ import { getStudentDataFromBridge } from "../api/bridgingService";
 const Emotion = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const location = useLocation();
   const { sendMood } = useMoodService();
-  const student_id = location.state?.student_id || 1;
+  const studentData = getStudentDataFromBridge();
+  if (!studentData || !studentData.student_id) {
+    alert("Student data is not available. Please try again.");
+    return;
+  }
+  const student_id = studentData.student_id;
 
   const handleMoodPress = async (emotion: string, isDaily: boolean) => {
     try {
-      await sendMood(student_id, emotion, isDaily);
+      await sendMood(Number(student_id), emotion, isDaily);
     } catch (error) {
       console.error(error);
     }
@@ -36,7 +40,13 @@ const Emotion = () => {
         async (position) => {
           const { latitude, longitude } = position.coords;
             const studentData = getStudentDataFromBridge();
-          const studentId = studentData ? Number(studentData.student_id) : 1; // fallback to 1 if studentData is unavailable
+            if (!studentData || !studentData.student_id) {
+            console.error("Student ID is not available");
+            alert("Unable to retrieve student ID for checkout");
+            setLoading(false);
+            return;
+            }
+            const studentId = Number(studentData.student_id);
           await postCheckoutById(studentId, latitude, longitude);
           navigate("/feedback");
         },
