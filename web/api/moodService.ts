@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import { API_URL, TEST_KEY } from "../config/config";
+import { API_URL, API_KEY } from "../config/config";
 
 export function useMoodService() {
   const sendMood = useCallback(
@@ -15,7 +15,7 @@ export function useMoodService() {
           headers: {
             "Content-Type": "application/json",
             "student-id": student_id.toString(),
-            "Test-Key": TEST_KEY,
+            "api-key": API_KEY,
           },
           body: JSON.stringify({
             emotion,

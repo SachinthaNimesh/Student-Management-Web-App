@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { API_URL, TEST_KEY } from '../config/config';
+import { API_URL, API_KEY } from '../config/config';
 import { AxiosResponse } from 'axios';
 import type { AxiosError } from 'axios';
 
@@ -23,7 +23,7 @@ export const postCheckinById = async (id: number, latitude: number, longitude: n
                 headers: { 
                     'Content-Type': 'application/json',
                     'student-id': id, // Match Student-ID from curl request
-                    'Test-Key': TEST_KEY // Ensure TEST_KEY is used correctly
+                    'api-key': API_KEY // Ensure API_KEY is used correctly
                 }
             }
         );
@@ -81,7 +81,7 @@ export const postCheckoutById = async (id: number, latitude: number, longitude: 
                 headers: { 
                     'Content-Type': 'application/json',
                     'student-id': id, 
-                    'Test-Key': TEST_KEY 
+                    'api-key': API_KEY 
                 }
             }
         );

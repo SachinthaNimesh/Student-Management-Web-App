@@ -1,13 +1,13 @@
 import axios, { AxiosResponse } from 'axios';
 import { Student } from '../types/student';
-import { API_URL, TEST_KEY } from '../config/config';
+import { API_URL, API_KEY } from '../config/config';
 
 export const getStudentById = async (id: number): Promise<Student | null> => {
     try {
         const response: AxiosResponse<Student> = await axios.get(`${API_URL}/get-student`, {
             headers: {
                 'Content-Type': 'application/json',
-                'Test-Key': TEST_KEY, 
+                'api-key': API_KEY, 
                 'student-id': id 
             },
         });
