@@ -23,7 +23,7 @@ export const postCheckinById = async (id: number, latitude: number, longitude: n
                 headers: { 
                     'Content-Type': 'application/json',
                     'student-id': id, // Match Student-ID from curl request
-                    'Test-Key': TEST_KEY // Ensure TEST_KEY is used correctly
+                    'testkey': TEST_KEY // Ensure TEST_KEY is used correctly
                 }
             }
         );
@@ -80,8 +80,8 @@ export const postCheckoutById = async (id: number, latitude: number, longitude: 
                 timeout: 10000,  // 10 second timeout
                 headers: { 
                     'Content-Type': 'application/json',
-                    'student-id': id, // Match Student-ID from curl request
-                    'Test-Key': TEST_KEY // Ensure TEST_KEY is used correctly
+                    'student-id': id, 
+                    'Test-Key': TEST_KEY 
                 }
             }
         );
