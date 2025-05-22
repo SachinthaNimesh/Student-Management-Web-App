@@ -108,6 +108,9 @@ const CheckInScreen = () => {
     };
 
     updateDateTime();
+    const intervalId = setInterval(updateDateTime, 1000); // Update every minute
+
+    return () => clearInterval(intervalId); // Cleanup on unmount
   }, []);
 
   const handleCheckIn = async () => {

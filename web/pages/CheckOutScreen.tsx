@@ -82,8 +82,10 @@ const CheckOutScreen: React.FC = () => {
         }
 
         const { latitude, longitude } = studentData;
+
         setLatitude(latitude);
         setLongitude(longitude);
+        setUserLocation(`Lat: ${latitude}, Lng: ${longitude}`);
       } catch (error) {
         console.error("Error fetching location from bridge:", error);
         setUserLocation("Failed to fetch location");
