@@ -3,14 +3,15 @@ import { Student } from '../types/student';
 import { API_URL } from '../config/config';
 import { getStudentDataFromBridge } from './bridgingService';
 
-export const getStudentById = async (id: number): Promise<Student | null> => {
+export const getStudentById = async (): Promise<Student | null> => {
+    let studentData: { student_id: string; API_KEY: string } | null = null;
     try {
-        const studentData = getStudentDataFromBridge();
+        studentData = getStudentDataFromBridge();
         if (!studentData) {
             alert("Student data is not available.");
             return null;
         }
-        const { student_id, API_KEY,  } = studentData;
+        const { student_id, API_KEY } = studentData;
 
         const response: AxiosResponse<Student> = await axios.get(`${API_URL}/get-student`, {
             headers: {
@@ -27,7 +28,7 @@ export const getStudentById = async (id: number): Promise<Student | null> => {
         }
     } catch (error) {
         if (axios.isAxiosError(error)) {
-            console.error(`Axios error fetching student with id ${id}:`, {
+            console.error(`Axios error fetching student with id ${studentData?.student_id}:`, {
                 message: error.message,
                 code: error.code,
                 config: error.config,
@@ -35,8 +36,8 @@ export const getStudentById = async (id: number): Promise<Student | null> => {
                 status: error.response?.status,
             });
         } else {
-            console.error(`Unexpected error fetching student with id ${id}:`, error);
+            console.error(`Unexpected error fetching student:`, error);
         }
-        throw new Error(`Failed to fetch student with id ${id}`);
+        throw new Error(`Failed to fetch student`);
     }
 };

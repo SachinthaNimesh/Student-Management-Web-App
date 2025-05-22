@@ -2,15 +2,24 @@
 
 declare global {
     interface Window {
-        studentData?: { student_id: string; API_KEY: string };
+        studentData?: {
+            student_id: string;
+            API_KEY: string;
+            latitude: number;
+            longitude: number;
+        };
     }
 }
 
-export const getStudentDataFromBridge = (): { student_id: string; API_KEY: string } | null => {
+export const getStudentDataFromBridge = (): {
+    student_id: string;
+    API_KEY: string;
+    latitude: number;
+    longitude: number;
+} | null => {
     if (typeof window !== "undefined" && window.studentData) {
         return window.studentData;
     }
     console.warn("Student data is not available on the window object.");
     return null;
 };
-

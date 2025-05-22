@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { postCheckinById } from "../api/attendanceService";
 import React from "react";
-// import { fetchLocationFromAPI } from "../api/locationService";
 import { GOOGLE_API_KEY } from "../config/config";
 import { CSSProperties } from "react";
 import axios from "axios";
@@ -49,37 +48,30 @@ const CheckInScreen = () => {
   };
 
   useEffect(() => {
-    const getDeviceLocation = async () => {
+    const fetchLocationFromBridge = async () => {
       try {
-        if (!navigator.geolocation) {
-          console.error("Geolocation is not supported by this browser.");
+        const studentData = getStudentDataFromBridge();
+        if (!studentData || !studentData.latitude || !studentData.longitude) {
+          console.error("Student location data is not available.");
+          setUserLocation("Failed to fetch location");
           return;
         }
 
-        navigator.geolocation.getCurrentPosition(
-          async (position) => {
-            const { latitude, longitude } = position.coords;
+        const { latitude, longitude } = studentData;
 
-            const address = await reverseGeocode(latitude, longitude);
-            console.log(address);
+        const address = await reverseGeocode(latitude, longitude);
+        console.log(address);
 
-            setLatitude(latitude);
-            setLongitude(longitude);
-            setUserLocation(address || `Lat: ${latitude}, Lng: ${longitude}`);
-          },
-          (error) => {
-            console.error("Error getting location: ", error);
-            setUserLocation("Failed to fetch location");
-          },
-          { enableHighAccuracy: true }
-        );
+        setLatitude(latitude);
+        setLongitude(longitude);
+        setUserLocation(address || `Lat: ${latitude}, Lng: ${longitude}`);
       } catch (error) {
-        console.error("Error getting location: ", error);
+        console.error("Error fetching location from bridge:", error);
         setUserLocation("Failed to fetch location");
       }
     };
 
-    getDeviceLocation();
+    fetchLocationFromBridge();
   }, []);
 
   const navigate = useNavigate();
@@ -90,7 +82,7 @@ const CheckInScreen = () => {
       let hours = now.getHours();
       const minutes = now.getMinutes().toString().padStart(2, "0");
       const period = hours >= 12 ? "PM" : "AM";
-      hours = hours ? hours : 12;
+      hours = hours % 12 || 12; // Convert to 12-hour format
       const day = now.getDate();
       const monthNames = [
         "January",
@@ -135,7 +127,7 @@ const CheckInScreen = () => {
         return;
       }
 
-      await postCheckinById(student_id, latitude, longitude, true); 
+      await postCheckinById(student_id, latitude, longitude, true);
       navigate("/welcome-greeting");
     } catch (error) {
       console.error("An error occurred during check-in:", error);
@@ -210,8 +202,8 @@ const styles: { [key: string]: CSSProperties } = {
     position: "fixed" as const,
   },
   infoText: {
-    marginLeft: "2vh", // Align horizontally closer to checkInText
-    fontSize: "26px", // Reduced font size
+    marginLeft: "2vh",
+    fontSize: "26px",
     color: "#000",
     marginBottom: "-15px",
     fontWeight: "600",

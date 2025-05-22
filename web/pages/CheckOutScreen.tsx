@@ -83,39 +83,24 @@ const CheckOutScreen: React.FC = () => {
     try {
       setLoading(true);
 
-      // Request location permissions and get the current location
-      if (!navigator.geolocation) {
-        alert("Geolocation is not supported by your browser");
+      const studentData = getStudentDataFromBridge();
+      if (!studentData || !studentData.latitude || !studentData.longitude) {
+        alert("Student location data is not available.");
         return;
       }
 
-      navigator.geolocation.getCurrentPosition(
-        async (position) => {
-          const { latitude, longitude } = position.coords;
+      const { latitude, longitude, student_id: studentId } = studentData;
+      const numericStudentId = Number(studentId);
 
-          // Send check-out data to the backend
-            const studentData = getStudentDataFromBridge();
-            if (!studentData) {
-            alert("Student data is not available.");
-            return;
-            }
-            const { student_id: studentId } = studentData;
-            const numericStudentId = Number(studentId);
-            if (isNaN(numericStudentId)) {
-              alert("Invalid student ID.");
-              return;
-            }
-          await postCheckoutById(numericStudentId, latitude, longitude);
+      if (isNaN(numericStudentId)) {
+        alert("Invalid student ID.");
+        return;
+      }
 
-          navigate("/feedback");
-        },
-        () => {
-          alert("Unable to retrieve your location");
-        }
-      );
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      await postCheckoutById(numericStudentId, latitude, longitude);
+      navigate("/feedback");
     } catch (error) {
-      alert("An error occurred during check-out");
+      alert("An error occurred during check-out" + error);
     } finally {
       setLoading(false);
     }
