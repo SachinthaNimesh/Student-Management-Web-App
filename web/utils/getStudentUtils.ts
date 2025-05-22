@@ -8,3 +8,5 @@ export const getStudentId = (): number | null => {
   }
   return Number(studentData.student_id);
 };
+
+      

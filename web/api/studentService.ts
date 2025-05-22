@@ -20,6 +20,7 @@ export const getStudentById = async (id: number): Promise<Student | null> => {
             },
         });
         if (response.headers['content-type']?.includes('application/json')) {
+            console.log('Fetched student data:', response.data); // Log the student data
             return response.data;
         } else {
             throw new Error('Received non-JSON response from the API');
