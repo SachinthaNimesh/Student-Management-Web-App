@@ -9,36 +9,22 @@ import SadImage from "../assets/sad.png";
 import CheckoutImage from "../assets/checkout.png";
 import React from "react";
 import { getStudentDataFromBridge } from "../api/bridgingService";
+
 const Emotion = () => {
   const [loading, setLoading] = useState(false);
-  const [studentData, setStudentData] = useState<{ student_id: string | null }>({
-    student_id: null,
-  });
   const navigate = useNavigate();
   const { sendMood } = useMoodService();
+  const studentData = getStudentDataFromBridge();
 
-  useEffect(() => {
-    const fetchStudentData = () => {
-      const data = getStudentDataFromBridge();
-      if (!data || !data.student_id) {
-        alert("Student data is not available. Please try again.");
-      } else {
-        setStudentData(data);
-      }
-    };
-
-    fetchStudentData();
-  }, []);
-
-  if (!studentData.student_id) {
-    return null; // Prevent rendering if student data is unavailable
+  if (!studentData?.student_id) {
+    throw new Error("Student ID is not available.");
   }
-  const data = getStudentDataFromBridge();
-  const student_id = data?.student_id ?? null;
+
+  const student_id = Number(studentData.student_id);
 
   const handleMoodPress = async (emotion: string, isDaily: boolean) => {
     try {
-      await sendMood(Number(student_id), emotion, isDaily);
+      await sendMood(student_id, emotion, isDaily);
     } catch (error) {
       console.error(error);
     }
@@ -55,24 +41,15 @@ const Emotion = () => {
       navigator.geolocation.getCurrentPosition(
         async (position) => {
           const { latitude, longitude } = position.coords;
-          const studentData = getStudentDataFromBridge();
-          if (!studentData || !studentData.student_id) {
-            console.error("Student ID is not available");
-            alert("Unable to retrieve student ID for checkout");
-            setLoading(false);
-            return;
-          }
-          const studentId = Number(studentData.student_id);
-          await postCheckoutById(studentId, latitude, longitude);
+          await postCheckoutById(student_id, latitude, longitude);
           navigate("/feedback");
         },
         () => {
           alert("Unable to retrieve your location");
         }
       );
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
-      alert("An error occurred during check-out");
+      alert("An error occurred during check-out: " + error);
     } finally {
       setLoading(false);
     }
