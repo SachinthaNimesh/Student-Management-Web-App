@@ -2,26 +2,40 @@ import React, { useEffect } from "react";
 import RealTimeClock from "../components/RealTimeClock";
 import { getStudentById } from "../api/studentService";
 import { Student } from "../types/student";
-
 import ProfilePicture from "../assets/profile_male.png";
 import CssBaseline from "@mui/material/CssBaseline";
 import Box from "@mui/material/Box";
 import Container from "@mui/material/Container";
+import { getStudentDataFromBridge } from "../api/bridgingService";
 
 const Header: React.FC = () => {
   const [student, setStudent] = React.useState<Student | null>(null);
+
   useEffect(() => {
     const fetchStudent = async () => {
       try {
-        const student = await getStudentById(1);
-        setStudent(student);
+        const studentData = getStudentDataFromBridge();
+        console.log("Student data in Header:", studentData);
+
+        if (!studentData || !studentData.student_id) {
+          alert("Student data is not available. Please try again.");
+          return;
+        }
+
+        const student_id = Number(studentData.student_id);
+        console.log("Fetched student_id in Header:", student_id);
+
+        const fetchedStudent = await getStudentById();
+        setStudent(fetchedStudent);
+        console.log("Fetched student details:", fetchedStudent);
       } catch (error) {
-        console.error("Failed to fetch student:", error);
+        console.error("An error occurred while fetching student data:", error);
       }
     };
 
     fetchStudent();
   }, []);
+
   return (
     <React.Fragment>
       <CssBaseline />
@@ -46,7 +60,12 @@ const Header: React.FC = () => {
               padding: "0 1rem",
             }}
           >
-            <Box sx={{ display: "flex", flexDirection: "column" }}>
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+              }}
+            >
               <h1
                 style={{
                   fontSize: "2rem",
