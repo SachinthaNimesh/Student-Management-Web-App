@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { postCheckoutById } from "../api/attendanceService";
 import checkoutImage from "../assets/checkout.png";
@@ -66,7 +66,32 @@ const styles = {
 
 const CheckOutScreen: React.FC = () => {
   const [loading, setLoading] = useState(false);
+  const [userLocation, setUserLocation] = useState<string | null>(null);
+  const [latitude, setLatitude] = useState<number | null>(null);
+  const [longitude, setLongitude] = useState<number | null>(null);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchLocationFromBridge = async () => {
+      try {
+        const studentData = await getStudentDataFromBridge();
+        if (!studentData || typeof studentData.latitude !== "number" || typeof studentData.longitude !== "number") {
+          console.error("Student location data is not available or invalid.");
+          setUserLocation("Failed to fetch location");
+          return;
+        }
+
+        const { latitude, longitude } = studentData;
+        setLatitude(latitude);
+        setLongitude(longitude);
+      } catch (error) {
+        console.error("Error fetching location from bridge:", error);
+        setUserLocation("Failed to fetch location");
+      }
+    };
+
+    fetchLocationFromBridge();
+  }, []);
 
   const handleButtonAnimation = (
     event: React.MouseEvent<HTMLButtonElement>
@@ -84,23 +109,22 @@ const CheckOutScreen: React.FC = () => {
       setLoading(true);
 
       const studentData = getStudentDataFromBridge();
-      if (!studentData || !studentData.latitude || !studentData.longitude) {
-        alert("Student location data is not available.");
+      if (!studentData || !studentData.student_id) {
+        alert("Student data is not available. Please try again.");
         return;
       }
 
-      const { latitude, longitude, student_id: studentId } = studentData;
-      const numericStudentId = Number(studentId);
+      const studentId = Number(studentData.student_id);
 
-      if (isNaN(numericStudentId)) {
-        alert("Invalid student ID.");
+      if (!userLocation || !latitude || !longitude) {
+        alert("Location is not available. Please try again.");
         return;
       }
 
-      await postCheckoutById(numericStudentId, latitude, longitude);
+      await postCheckoutById(studentId, latitude, longitude);
       navigate("/feedback");
     } catch (error) {
-      alert("An error occurred during check-out" + error);
+      alert("An error occurred during check-out: " + error);
     } finally {
       setLoading(false);
     }
@@ -109,7 +133,7 @@ const CheckOutScreen: React.FC = () => {
   return (
     <div style={styles.flexBox}>
       <img src={checkoutImage} alt="Checkout" style={styles.image} />
-      <button
+            <button
         style={{
           ...styles.btn,
           ...(loading ? styles.btnDisabled : {}),

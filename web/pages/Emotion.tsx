@@ -33,21 +33,16 @@ const Emotion = () => {
   const handleCheckOut = async () => {
     try {
       setLoading(true);
-      if (!navigator.geolocation) {
-        alert("Geolocation is not supported by your browser");
+
+      const studentData = await getStudentDataFromBridge();
+      if (!studentData || typeof studentData.latitude !== "number" || typeof studentData.longitude !== "number") {
+        alert("Location data is not available. Please try again.");
         return;
       }
 
-      navigator.geolocation.getCurrentPosition(
-        async (position) => {
-          const { latitude, longitude } = position.coords;
-          await postCheckoutById(student_id, latitude, longitude);
-          navigate("/feedback");
-        },
-        () => {
-          alert("Unable to retrieve your location");
-        }
-      );
+      const { latitude, longitude } = studentData;
+      await postCheckoutById(student_id, latitude, longitude);
+      navigate("/feedback");
     } catch (error) {
       alert("An error occurred during check-out: " + error);
     } finally {

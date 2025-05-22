@@ -2,7 +2,8 @@ import React, { useEffect } from "react";
 import RealTimeClock from "../components/RealTimeClock";
 import { getStudentById } from "../api/studentService";
 import { Student } from "../types/student";
-import ProfilePicture from "../assets/profile_male.png";
+import ProfilePictureMale from "../assets/profile_male.png";
+import ProfilePictureFemale from "../assets/profile_female.png";
 import CssBaseline from "@mui/material/CssBaseline";
 import Box from "@mui/material/Box";
 import Container from "@mui/material/Container";
@@ -79,14 +80,14 @@ const Header: React.FC = () => {
             </Box>
             <Box>
               <img
-                src={ProfilePicture}
-                alt="Profile"
-                style={{
-                  width: "70px",
-                  height: "70px",
-                  borderRadius: "50%",
-                  objectFit: "cover",
-                }}
+              src={student?.gender === "Male" ? ProfilePictureMale : ProfilePictureFemale}
+              alt="Profile"
+              style={{
+                width: "70px",
+                height: "70px",
+                borderRadius: "50%",
+                objectFit: "cover",
+              }}
               />
             </Box>
           </Box>
