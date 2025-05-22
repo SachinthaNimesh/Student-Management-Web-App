@@ -10,13 +10,13 @@ export const getStudentById = async (id: number): Promise<Student | null> => {
             alert("Student data is not available.");
             return null;
         }
-        const { API_KEY } = studentData;
+        const { API_KEY, student_id } = studentData;
 
         const response: AxiosResponse<Student> = await axios.get(`${API_URL}/get-student`, {
             headers: {
                 'Content-Type': 'application/json',
                 'api-key': API_KEY, 
-                'student-id': id 
+                'student-id': student_id 
             },
         });
         if (response.headers['content-type']?.includes('application/json')) {
