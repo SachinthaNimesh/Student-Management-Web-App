@@ -33,8 +33,8 @@ const Emotion = () => {
   if (!studentData.student_id) {
     return null; // Prevent rendering if student data is unavailable
   }
-
-  const student_id = studentData.student_id;
+  const data = getStudentDataFromBridge();
+  const student_id = data?.student_id ?? null;
 
   const handleMoodPress = async (emotion: string, isDaily: boolean) => {
     try {
