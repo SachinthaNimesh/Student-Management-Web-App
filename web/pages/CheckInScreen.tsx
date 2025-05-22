@@ -50,18 +50,18 @@ const CheckInScreen = () => {
   useEffect(() => {
     const fetchLocationFromBridge = async () => {
       try {
-        const studentData = getStudentDataFromBridge();
-        if (!studentData || !studentData.latitude || !studentData.longitude) {
-          console.error("Student location data is not available.");
+        const studentData = await getStudentDataFromBridge();
+        if (!studentData || typeof studentData.latitude !== "number" || typeof studentData.longitude !== "number") {
+          console.error("Student location data is not available or invalid.");
           setUserLocation("Failed to fetch location");
           return;
         }
-
+    
         const { latitude, longitude } = studentData;
-
+    
         const address = await reverseGeocode(latitude, longitude);
         console.log(address);
-
+    
         setLatitude(latitude);
         setLongitude(longitude);
         setUserLocation(address || `Lat: ${latitude}, Lng: ${longitude}`);
