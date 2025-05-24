@@ -52,7 +52,7 @@ const CheckInScreen = () => {
       try {
         const studentData = await getStudentDataFromBridge();
         if (!studentData || typeof studentData.latitude !== "number" || typeof studentData.longitude !== "number") {
-          console.error("Student location data is not available or invalid.");
+          console.error("Student location data is not available or invalid.", { studentData });
           setUserLocation("Failed to fetch location");
           return;
         }
@@ -66,7 +66,7 @@ const CheckInScreen = () => {
         setLongitude(longitude);
         setUserLocation(address || `Lat: ${latitude}, Lng: ${longitude}`);
       } catch (error) {
-        console.error("Error fetching location from bridge:", error);
+        console.error("Error fetching location from bridge. Details:", error);
         setUserLocation("Failed to fetch location");
       }
     };
@@ -117,7 +117,7 @@ const CheckInScreen = () => {
     try {
       setLoading(true);
 
-      const studentData = getStudentDataFromBridge();
+      const studentData = await getStudentDataFromBridge(); // <-- await here
       if (!studentData || !studentData.student_id) {
         alert("Student data is not available. Please try again.");
         return;
