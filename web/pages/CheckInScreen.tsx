@@ -48,30 +48,48 @@ const CheckInScreen = () => {
   };
 
   useEffect(() => {
+    let isMounted = true;
+    const maxAttempts = 5;
+    let attempt = 0;
+
     const fetchLocationFromBridge = async () => {
-      try {
-        const studentData = await getStudentDataFromBridge();
-        if (!studentData || typeof studentData.latitude !== "number" || typeof studentData.longitude !== "number") {
-          console.error("Student location data is not available or invalid.", { studentData });
+      while (attempt < maxAttempts && isMounted) {
+        try {
+          const studentData = await getStudentDataFromBridge();
+          if (
+            studentData &&
+            typeof studentData.latitude === "number" &&
+            typeof studentData.longitude === "number"
+          ) {
+            const { latitude, longitude } = studentData;
+            const address = await reverseGeocode(latitude, longitude);
+            setLatitude(latitude);
+            setLongitude(longitude);
+            setUserLocation(address || `Lat: ${latitude}, Lng: ${longitude}`);
+            return;
+          } else {
+            attempt++;
+            if (attempt < maxAttempts) {
+              await new Promise((res) => setTimeout(res, 1000));
+            }
+          }
+        } catch (error) {
+          console.error("Error fetching location from bridge. Details:", error);
           setUserLocation("Failed to fetch location");
           return;
         }
-    
-        const { latitude, longitude } = studentData;
-    
-        const address = await reverseGeocode(latitude, longitude);
-        console.log(address);
-    
-        setLatitude(latitude);
-        setLongitude(longitude);
-        setUserLocation(address || `Lat: ${latitude}, Lng: ${longitude}`);
-      } catch (error) {
-        console.error("Error fetching location from bridge. Details:", error);
+      }
+      if (isMounted) {
+        console.error("Student location data is not available or invalid after retries.");
         setUserLocation("Failed to fetch location");
       }
     };
 
     fetchLocationFromBridge();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   const navigate = useNavigate();
