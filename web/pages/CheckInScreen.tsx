@@ -49,43 +49,41 @@ const CheckInScreen = () => {
 
   useEffect(() => {
     let isMounted = true;
-    const maxAttempts = 5;
-    let attempt = 0;
 
-    const fetchLocationFromBridge = async () => {
-      while (attempt < maxAttempts && isMounted) {
-        try {
-          const studentData = await getStudentDataFromBridge();
-          if (
-            studentData &&
-            typeof studentData.latitude === "number" &&
-            typeof studentData.longitude === "number"
-          ) {
-            const { latitude, longitude } = studentData;
-            const address = await reverseGeocode(latitude, longitude);
+    const fetchLocationWithRetry = async (retries = 5) => {
+      try {
+        const studentData = await getStudentDataFromBridge();
+        if (
+          studentData &&
+          typeof studentData.latitude === "number" &&
+          typeof studentData.longitude === "number"
+        ) {
+          const { latitude, longitude } = studentData;
+          const address = await reverseGeocode(latitude, longitude);
+          if (isMounted) {
             setLatitude(latitude);
             setLongitude(longitude);
             setUserLocation(address || `Lat: ${latitude}, Lng: ${longitude}`);
-            return;
-          } else {
-            attempt++;
-            if (attempt < maxAttempts) {
-              await new Promise((res) => setTimeout(res, 1000));
-            }
           }
-        } catch (error) {
+        } else if (retries > 0) {
+          setTimeout(() => fetchLocationWithRetry(retries - 1), 1000);
+        } else {
+          if (isMounted) {
+            console.error(
+              "Student location data is not available or invalid after retries."
+            );
+            setUserLocation("Failed to fetch location");
+          }
+        }
+      } catch (error) {
+        if (isMounted) {
           console.error("Error fetching location from bridge. Details:", error);
           setUserLocation("Failed to fetch location");
-          return;
         }
-      }
-      if (isMounted) {
-        console.error("Student location data is not available or invalid after retries.");
-        setUserLocation("Failed to fetch location");
       }
     };
 
-    fetchLocationFromBridge();
+    fetchLocationWithRetry();
 
     return () => {
       isMounted = false;
