@@ -89,7 +89,7 @@ const Feedback = () => {
       backdropFilter: "blur(10px)",
       borderRadius: 20,
       padding: 30,
-      width: "100%",
+      width: "calc(100vw - 80px)", // 40px margin left and right
       maxWidth: 380,
       marginBottom: 30,
       boxShadow: "0 8px 32px rgba(139,126,216,0.1)",

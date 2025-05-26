@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { postCheckinById } from "../api/attendanceService";
 import { getStudentDataFromBridge } from "../api/bridgingService";
+import Welcome from "./Welcome"; // Import Welcome screen
 
 // Extracted minimal CSS-in-JS for the design
 const styles = {
@@ -34,7 +35,8 @@ const styles = {
     boxShadow: "0 20px 40px rgba(0,0,0,0.1)",
     border: "1px solid rgba(255,255,255,0.3)",
     maxWidth: 400,
-    margin: "60px auto 0 auto",
+    width: "calc(100vw - 80px)", // 40px margin on both sides
+    margin: "60px 40px 0 40px",
     transition: "all 0.3s ease",
     textAlign: "center" as const,
   },
@@ -91,9 +93,17 @@ const CheckInScreen = () => {
     fullDate: "",
   });
 
+  const [showWelcome, setShowWelcome] = useState(true); // Add state for welcome screen
   const navigate = useNavigate();
 
   useEffect(() => {
+    // Show Welcome screen for 2 seconds, then show check-in
+    const timer = setTimeout(() => setShowWelcome(false), 2000);
+    return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    if (showWelcome) return;
     const updateDateTime = () => {
       const now = new Date();
       let hours = now.getHours();
@@ -130,13 +140,11 @@ const CheckInScreen = () => {
     const intervalId = setInterval(updateDateTime, 1000);
 
     return () => clearInterval(intervalId);
-  }, []);
+  }, [showWelcome]);
 
   const handleCheckIn = async () => {
     try {
       setLoading(true);
-
-      // Always get the latest student data from the bridge
       const studentData = await getStudentDataFromBridge();
       let latitude = 0;
       let longitude = 0;
@@ -156,7 +164,7 @@ const CheckInScreen = () => {
       }
 
       const student_id = Number(studentData.student_id);
-   
+
       await postCheckinById(student_id, latitude, longitude, true);
       navigate("/welcome-greeting");
     } catch (error) {
@@ -167,6 +175,15 @@ const CheckInScreen = () => {
     }
   };
 
+  if (showWelcome) {
+    // Add a wrapper div with high z-index to ensure Welcome is always on top
+    return (
+      <div style={{ position: "fixed", inset: 0, zIndex: 99999 }}>
+        <Welcome />
+      </div>
+    );
+  }
+
   return (
     <div>
       {/* Background animation */}
@@ -176,7 +193,10 @@ const CheckInScreen = () => {
         <div style={styles.floating(100, 100, undefined, "20%", undefined, "30%")}></div>
       </div>
       {/* Main Card */}
-      <div style={styles.card}>
+      <div
+        style={styles.card}
+        // Prevent width change on button press by not letting button affect card width
+      >
         <h2 style={styles.title}>Check In</h2>
         <div style={styles.locationInfo}>
           <div style={styles.infoRow}>

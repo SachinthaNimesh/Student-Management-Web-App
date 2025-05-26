@@ -25,7 +25,7 @@ const popupContent: Record<
     ],
     buttons: [
       { label: "OK", type: "primary" },
-      { label: "Later", type: "secondary" },
+ 
     ],
   },
   sad: {
@@ -40,7 +40,7 @@ const popupContent: Record<
     ],
     buttons: [
       { label: "OK", type: "primary" },
-      { label: "Later", type: "secondary" },
+ 
     ],
   },
 };
@@ -285,7 +285,7 @@ const styles = {
     backdropFilter: "blur(10px)",
     borderRadius: 20,
     padding: 30,
-    width: "100%",
+    width: "calc(100vw - 80px)", // 40px margin left and right
     maxWidth: 380,
     marginBottom: 30,
     boxShadow: "0 8px 32px rgba(139,126,216,0.1)",
@@ -348,7 +348,7 @@ const styles = {
     backdropFilter: "blur(10px)",
     borderRadius: 20,
     padding: 20,
-    width: "100%",
+    width: "calc(100vw - 80px)", // 40px margin left and right
     maxWidth: 380,
     boxShadow: "0 8px 32px rgba(0,0,0,0.1)",
   },

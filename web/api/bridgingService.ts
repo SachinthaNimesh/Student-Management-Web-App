@@ -21,6 +21,5 @@ export const getStudentDataFromBridge = (): {
         // Always return a fresh copy to avoid stale references
         return { ...window.studentData };
     }
-    // Provide sample values for testing
     return null;
 };
