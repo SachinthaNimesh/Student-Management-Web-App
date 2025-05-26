@@ -67,8 +67,8 @@ const styles = {
 const CheckOutScreen: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [userLocation, setUserLocation] = useState<string | null>(null);
-  const [latitude, setLatitude] = useState<number | null>(null);
-  const [longitude, setLongitude] = useState<number | null>(null);
+  // const [latitude, setLatitude] = useState<number | null>(null);
+  // const [longitude, setLongitude] = useState<number | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -80,16 +80,13 @@ const CheckOutScreen: React.FC = () => {
         if (studentData && typeof studentData.latitude === "number" && typeof studentData.longitude === "number") {
           latitude = studentData.latitude;
           longitude = studentData.longitude;
+          setUserLocation(`Lat: ${latitude}, Lng: ${longitude}`);
         } else {
           console.error("Student location data is not available or invalid.");
+          setUserLocation(null);
         }
-        setLatitude(latitude);
-        setLongitude(longitude);
-        setUserLocation(`Lat: ${latitude}, Lng: ${longitude}`);
       } catch (error) {
         console.error("Error fetching location from bridge:", error);
-        setLatitude(0);
-        setLongitude(0);
         setUserLocation("Failed to fetch location");
       }
     };
@@ -112,7 +109,7 @@ const CheckOutScreen: React.FC = () => {
     try {
       setLoading(true);
 
-      const studentData = getStudentDataFromBridge();
+      const studentData = await getStudentDataFromBridge();
       let latitude = 0;
       let longitude = 0;
       if (studentData && typeof studentData.latitude === "number" && typeof studentData.longitude === "number") {
@@ -139,7 +136,12 @@ const CheckOutScreen: React.FC = () => {
   return (
     <div style={styles.flexBox}>
       <img src={checkoutImage} alt="Checkout" style={styles.image} />
-            <button
+      {userLocation && (
+        <div style={{ ...styles.text, fontWeight: "normal", fontSize: "18px" }}>
+          {userLocation}
+        </div>
+      )}
+      <button
         style={{
           ...styles.btn,
           ...(loading ? styles.btnDisabled : {}),

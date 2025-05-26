@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { postCheckinById } from "../api/attendanceService";
-import React from "react";
 import { GOOGLE_API_KEY } from "../config/config";
 import axios from "axios";
 import { getStudentDataFromBridge } from "../api/bridgingService";
