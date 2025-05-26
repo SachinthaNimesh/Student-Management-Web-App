@@ -420,7 +420,7 @@ const Emotion = () => {
       {/* Popup Overlay */}
       {popup && (
         <div
-          style={styles.popupOverlay}
+          style={styles.popupOverlay as React.CSSProperties}
           onClick={(e) => {
             if (e.target === e.currentTarget) closePopup();
           }}
