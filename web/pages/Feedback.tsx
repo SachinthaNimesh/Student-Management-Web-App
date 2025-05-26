@@ -166,15 +166,7 @@ const Feedback = () => {
 
   return (
     <div style={styles.page}>
-      {/* Header */}
-      <div style={styles.header}>
-        <div style={styles.greeting}>
-          Hi Student <span style={styles.wave}>👋</span>
-        </div>
-        <div style={styles.profileIcon} title="Profile">
-          {/* 👤 */}
-        </div>
-      </div>
+     
 
       {/* Mood Card */}
       <div style={styles.moodCard}>
