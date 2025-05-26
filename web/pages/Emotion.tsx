@@ -71,11 +71,12 @@ const Emotion = () => {
     try {
       setLoading(true);
       const studentData = await getStudentDataFromBridge();
-      if (!studentData || typeof studentData.latitude !== "number" || typeof studentData.longitude !== "number") {
-        alert("Location data is not available. Please try again.");
-        return;
+      let latitude = 0;
+      let longitude = 0;
+      if (studentData && typeof studentData.latitude === "number" && typeof studentData.longitude === "number") {
+        latitude = studentData.latitude;
+        longitude = studentData.longitude;
       }
-      const { latitude, longitude } = studentData;
       await postCheckoutById(student_id, latitude, longitude);
       navigate("/feedback");
     } catch (error) {
@@ -350,15 +351,7 @@ const Emotion = () => {
 
   return (
     <div style={styles.page}>
-      {/* Header */}
-      <div style={styles.header}>
-        <div style={styles.greeting}>
-          Hi Student <span style={styles.wave}>👋</span>
-        </div>
-        <div style={styles.profileIcon} title="Profile">
-          {/* 👤 */}
-        </div>
-      </div>
+      
 
       {/* Mood Card */}
       <div style={styles.moodCard}>
