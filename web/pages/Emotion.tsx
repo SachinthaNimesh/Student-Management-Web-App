@@ -109,7 +109,18 @@ const Emotion = () => {
     <div style={styles.page}>
       {/* Mood Card */}
       <div style={styles.moodCard}>
-        <h2 style={styles.moodTitle}>How are you feeling Now?</h2>
+        <h2
+          style={styles.moodTitle}
+          onClick={() => navigate("/checkout")}
+          role="button"
+          tabIndex={0}
+          onKeyDown={e => {
+            if (e.key === "Enter" || e.key === " ") navigate("/checkout");
+          }}
+          className="clickable-title"
+        >
+          How are you feeling Now?
+        </h2>
         <div style={styles.moodButtons}>
           {(["happy", "neutral", "sad"] as const).map((mood) => (
             <button
@@ -226,14 +237,13 @@ const Emotion = () => {
 const styles = {
   page: {
     fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-    // TODO:
-    // background: "linear-gradient(135deg, #8B7ED8 0%, #9F8FE8 50%, #A294EA 100%)",
     minHeight: "100vh",
     display: "flex",
     flexDirection: "column" as const,
     alignItems: "center",
     padding: 20,
     color: "white",
+    marginTop: 30,
   },
   header: {
     display: "flex",
@@ -377,13 +387,14 @@ const styles = {
     width: "100vw",
     height: "100vh",
     background: "rgba(0,0,0,0.5)",
-    display: undefined, // will be set inline
-    alignItems: "center",
-    justifyContent: "center",
     zIndex: 1000,
     opacity: undefined, // will be set inline
     visibility: undefined, // will be set inline
     transition: "all 0.3s ease",
+    // Ensure centering
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
   },
   popup: {
     background: "white",
