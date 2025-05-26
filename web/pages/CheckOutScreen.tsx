@@ -75,19 +75,21 @@ const CheckOutScreen: React.FC = () => {
     const fetchLocationFromBridge = async () => {
       try {
         const studentData = await getStudentDataFromBridge();
-        if (!studentData || typeof studentData.latitude !== "number" || typeof studentData.longitude !== "number") {
+        let latitude = 0;
+        let longitude = 0;
+        if (studentData && typeof studentData.latitude === "number" && typeof studentData.longitude === "number") {
+          latitude = studentData.latitude;
+          longitude = studentData.longitude;
+        } else {
           console.error("Student location data is not available or invalid.");
-          setUserLocation("Failed to fetch location");
-          return;
         }
-
-        const { latitude, longitude } = studentData;
-
         setLatitude(latitude);
         setLongitude(longitude);
         setUserLocation(`Lat: ${latitude}, Lng: ${longitude}`);
       } catch (error) {
         console.error("Error fetching location from bridge:", error);
+        setLatitude(0);
+        setLongitude(0);
         setUserLocation("Failed to fetch location");
       }
     };
@@ -111,17 +113,19 @@ const CheckOutScreen: React.FC = () => {
       setLoading(true);
 
       const studentData = getStudentDataFromBridge();
+      let latitude = 0;
+      let longitude = 0;
+      if (studentData && typeof studentData.latitude === "number" && typeof studentData.longitude === "number") {
+        latitude = studentData.latitude;
+        longitude = studentData.longitude;
+      }
+
       if (!studentData || !studentData.student_id) {
         alert("Student data is not available. Please try again.");
         return;
       }
 
       const studentId = Number(studentData.student_id);
-
-      if (!userLocation || !latitude || !longitude) {
-        alert("Location is not available. Please try again.");
-        return;
-      }
 
       await postCheckoutById(studentId, latitude, longitude);
       navigate("/feedback");
