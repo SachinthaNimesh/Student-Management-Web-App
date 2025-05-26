@@ -42,12 +42,14 @@ const Feedback = () => {
     page: {
       fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
       minHeight: "100vh",
+      minWidth: "100vw",
       display: "flex",
       flexDirection: "column" as const,
       alignItems: "center",
+      justifyContent: "center", // center vertically
       padding: 20,
       color: "white",
-      marginTop: 30,
+      marginTop: 0, // remove marginTop to allow vertical centering
     },
     header: {
       display: "flex",

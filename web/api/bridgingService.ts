@@ -21,6 +21,6 @@ export const getStudentDataFromBridge = (): {
         // Always return a fresh copy to avoid stale references
         return { ...window.studentData };
     }
-    console.warn("Student data is not available on the window object.");
+    // Provide sample values for testing
     return null;
 };
