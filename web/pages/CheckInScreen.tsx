@@ -93,6 +93,9 @@ const CheckInScreen = () => {
     fullDate: "",
   });
 
+  const [latitude, setLatitude] = useState<number | null>(null);
+  const [longitude, setLongitude] = useState<number | null>(null);
+
   const [showWelcome, setShowWelcome] = useState(true); // Add state for welcome screen
   const navigate = useNavigate();
 
@@ -139,7 +142,25 @@ const CheckInScreen = () => {
     updateDateTime();
     const intervalId = setInterval(updateDateTime, 1000);
 
-    return () => clearInterval(intervalId);
+    // Update lat/lng from bridge every second (or as needed)
+    const updateLatLng = async () => {
+      const studentData = await getStudentDataFromBridge();
+      if (
+        studentData &&
+        typeof studentData.latitude === "number" &&
+        typeof studentData.longitude === "number"
+      ) {
+        setLatitude(studentData.latitude);
+        setLongitude(studentData.longitude);
+      }
+    };
+    updateLatLng();
+    const latLngInterval = setInterval(updateLatLng, 1000);
+
+    return () => {
+      clearInterval(intervalId);
+      clearInterval(latLngInterval);
+    };
   }, [showWelcome]);
 
   const handleCheckIn = async () => {
@@ -153,17 +174,14 @@ const CheckInScreen = () => {
       }
       const student_id = Number(studentData.student_id);
 
-      // Always get fresh lat/lng from bridge before API call
-      const latestStudentData = getStudentDataFromBridge();
-      let latitude = 0;
-      let longitude = 0;
+      // Use lat/lng from state
       if (
-        latestStudentData &&
-        typeof latestStudentData.latitude === "number" &&
-        typeof latestStudentData.longitude === "number"
+        latitude === null ||
+        longitude === null
       ) {
-        latitude = latestStudentData.latitude;
-        longitude = latestStudentData.longitude;
+        alert("Location data is not available. Please try again.");
+        setLoading(false);
+        return;
       }
 
       await postCheckinById(student_id, latitude, longitude, true);
