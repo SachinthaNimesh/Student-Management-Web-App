@@ -146,24 +146,25 @@ const CheckInScreen = () => {
     try {
       setLoading(true);
       const studentData = await getStudentDataFromBridge();
-      let latitude = 0;
-      let longitude = 0;
-      if (
-        studentData &&
-        typeof studentData.latitude === "number" &&
-        typeof studentData.longitude === "number"
-      ) {
-        latitude = studentData.latitude;
-        longitude = studentData.longitude;
-      }
-
       if (!studentData || !studentData.student_id) {
         alert("Student data is not available. Please try again.");
         setLoading(false);
         return;
       }
-
       const student_id = Number(studentData.student_id);
+
+      // Always get fresh lat/lng from bridge before API call
+      const latestStudentData = getStudentDataFromBridge();
+      let latitude = 0;
+      let longitude = 0;
+      if (
+        latestStudentData &&
+        typeof latestStudentData.latitude === "number" &&
+        typeof latestStudentData.longitude === "number"
+      ) {
+        latitude = latestStudentData.latitude;
+        longitude = latestStudentData.longitude;
+      }
 
       await postCheckinById(student_id, latitude, longitude, true);
       navigate("/welcome-greeting");
