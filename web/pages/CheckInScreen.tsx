@@ -3,9 +3,85 @@ import { useNavigate } from "react-router-dom";
 import { postCheckinById } from "../api/attendanceService";
 import React from "react";
 import { GOOGLE_API_KEY } from "../config/config";
-import { CSSProperties } from "react";
 import axios from "axios";
 import { getStudentDataFromBridge } from "../api/bridgingService";
+
+// Extracted minimal CSS-in-JS for the design
+const styles = {
+  background: {
+    position: "fixed" as const,
+    top: 0,
+    left: 0,
+    width: "100vw",
+    height: "100vh",
+    zIndex: -1,
+    background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+    overflow: "hidden",
+  },
+  floating: (w: number, h: number, top?: string, left?: string, right?: string, bottom?: string, delay?: string) => ({
+    position: "absolute" as const,
+    borderRadius: "50%",
+    background: "rgba(255,255,255,0.1)",
+    width: w,
+    height: h,
+    top,
+    left,
+    right,
+    bottom,
+    animation: `float 6s ease-in-out infinite${delay ? ` ${delay}` : ""}`,
+  }),
+  card: {
+    background: "rgba(255,255,255,0.95)",
+    borderRadius: 25,
+    padding: 30,
+    boxShadow: "0 20px 40px rgba(0,0,0,0.1)",
+    border: "1px solid rgba(255,255,255,0.3)",
+    maxWidth: 400,
+    margin: "60px auto 0 auto",
+    transition: "all 0.3s ease",
+    textAlign: "center" as const,
+  },
+  title: {
+    fontSize: 32,
+    fontWeight: 700,
+    marginBottom: 20,
+    background: "linear-gradient(45deg, #667eea, #764ba2)",
+    WebkitBackgroundClip: "text",
+    WebkitTextFillColor: "transparent",
+    backgroundClip: "text",
+  },
+  locationInfo: {
+    display: "flex",
+    flexDirection: "column" as const,
+    gap: 15,
+    marginBottom: 30,
+  },
+  infoRow: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 12,
+    padding: 12,
+    background: "rgba(102, 126, 234, 0.1)",
+    borderRadius: 15,
+  },
+  icon: { fontSize: 20 },
+  infoText: { fontSize: 18, fontWeight: 500, color: "#2c3e50" },
+  checkinButton: {
+    width: "100%",
+    padding: 18,
+    border: "none",
+    borderRadius: 20,
+    fontSize: 20,
+    fontWeight: 600,
+    cursor: "pointer",
+    background: "linear-gradient(45deg, #ff6b6b, #feca57)",
+    color: "white",
+    textTransform: "uppercase" as const,
+    letterSpacing: 1,
+    transition: "all 0.3s ease",
+  },
+};
 
 const CheckInScreen = () => {
   const [loading, setLoading] = useState(false);
@@ -14,6 +90,7 @@ const CheckInScreen = () => {
     period: "",
     day: "",
     month: "",
+    fullDate: "",
   });
   const [userLocation, setUserLocation] = useState<string | null>(null);
 
@@ -48,28 +125,29 @@ const CheckInScreen = () => {
   useEffect(() => {
     let isMounted = true;
 
-    const fetchLocationWithRetry = async (retries = 5) => {
+    const fetchLocationWithRetry = async () => {
       try {
         const studentData = await getStudentDataFromBridge();
+        let latitude = 0;
+        let longitude = 0;
         if (
           studentData &&
           typeof studentData.latitude === "number" &&
           typeof studentData.longitude === "number"
         ) {
-          const { latitude, longitude } = studentData;
-          const address = await reverseGeocode(latitude, longitude);
-          if (isMounted) {
-            setUserLocation(address || `Lat: ${latitude}, Lng: ${longitude}`);
-          }
-        } else if (retries > 0) {
-          setTimeout(() => fetchLocationWithRetry(retries - 1), 1000);
-        } else {
-          if (isMounted) {
-            console.error(
-              "Student location data is not available or invalid after retries."
-            );
-            setUserLocation("Failed to fetch location");
-          }
+          latitude = studentData.latitude;
+          longitude = studentData.longitude;
+        }
+        let address = "";
+        if (latitude !== 0 || longitude !== 0) {
+          address = await reverseGeocode(latitude, longitude);
+        }
+        if (isMounted) {
+          setUserLocation(
+            address && address !== "Address lookup failed"
+              ? address
+              : `Lat: ${latitude}, Lng: ${longitude}`
+          );
         }
       } catch (error) {
         if (isMounted) {
@@ -111,18 +189,20 @@ const CheckInScreen = () => {
         "December",
       ];
       const month = monthNames[now.getMonth()];
+      const fullDate = `${month} ${day}, ${now.getFullYear()}`;
       setCurrentDateTime({
         time: `${hours}:${minutes}`,
         period,
         day: day.toString(),
         month,
+        fullDate,
       });
     };
 
     updateDateTime();
-    const intervalId = setInterval(updateDateTime, 1000); // Update every minute
+    const intervalId = setInterval(updateDateTime, 1000);
 
-    return () => clearInterval(intervalId); // Cleanup on unmount
+    return () => clearInterval(intervalId);
   }, []);
 
   const handleCheckIn = async () => {
@@ -142,17 +222,14 @@ const CheckInScreen = () => {
         longitude = studentData.longitude;
       }
 
-      if (
-        !studentData ||
-        !studentData.student_id
-      ) {
+      if (!studentData || !studentData.student_id) {
         alert("Student data is not available. Please try again.");
         setLoading(false);
         return;
       }
 
       const student_id = Number(studentData.student_id);
-
+   
       await postCheckinById(student_id, latitude, longitude, true);
       navigate("/welcome-greeting");
     } catch (error) {
@@ -163,100 +240,45 @@ const CheckInScreen = () => {
     }
   };
 
-  const handleButtonAnimation = (
-    event: React.MouseEvent<HTMLButtonElement>
-  ) => {
-    const button = event.currentTarget;
-    button.style.transform = "scale(0.95)";
-    setTimeout(() => {
-      button.style.transform = "scale(1)";
-    }, 150);
-  };
-
   return (
-    <div style={styles.checkInFrame}>
-      <h1 style={styles.checkInText}>Check-in</h1>
-      <p style={{ ...styles.infoText, marginTop: "-60px" }}>
-        🕑 {currentDateTime.time} {currentDateTime.period}
-      </p>
-      <p style={styles.infoText}>
-        📆 {currentDateTime.day} {currentDateTime.month}
-      </p>
-      <p style={styles.infoText}>
-        📍 {userLocation || "Waiting for location..."}
-      </p>
-      <button
-        style={styles.btn}
-        onClick={(event) => {
-          handleButtonAnimation(event);
-          handleCheckIn();
-        }}
-        disabled={loading}
-      >
-        {loading ? (
-          <span>Loading...</span>
-        ) : (
-          <span style={styles.btnText}>Check in</span>
-        )}
-      </button>
+    <div>
+      {/* Background animation */}
+      <div style={styles.background}>
+        <div style={styles.floating(80, 80, "20%", "10%")}></div>
+        <div style={styles.floating(60, 60, "60%", undefined, "15%")}></div>
+        <div style={styles.floating(100, 100, undefined, "20%", undefined, "30%")}></div>
+      </div>
+      {/* Main Card */}
+      <div style={styles.card}>
+        <h2 style={styles.title}>Ready to Check In?</h2>
+        <div style={styles.locationInfo}>
+          <div style={styles.infoRow}>
+            <span style={styles.icon}>🕐</span>
+            <span style={styles.infoText}>
+              {currentDateTime.time} {currentDateTime.period}
+            </span>
+          </div>
+          <div style={styles.infoRow}>
+            <span style={styles.icon}>📅</span>
+            <span style={styles.infoText}>{currentDateTime.fullDate}</span>
+          </div>
+          <div style={styles.infoRow}>
+            <span style={styles.icon}>📍</span>
+            <span style={styles.infoText}>
+              {userLocation || "Waiting for location..."}
+            </span>
+          </div>
+        </div>
+        <button
+          style={styles.checkinButton}
+          onClick={handleCheckIn}
+          disabled={loading}
+        >
+          {loading ? "Loading..." : "✨ Check In Now ✨"}
+        </button>
+      </div>
     </div>
   );
-};
-
-const styles: { [key: string]: CSSProperties } = {
-  checkInFrame: {
-    width: "calc(100% - 60px)",
-    maxWidth: "400px",
-    height: "58vh",
-    borderRadius: "18px",
-    backgroundColor: "rgba(225, 225, 225, 0.4)",
-    display: "flex",
-    flexDirection: "column" as const,
-    alignItems: "flex-start",
-    justifyContent: "center",
-    padding: "20px",
-    margin: "0 auto",
-    backdropFilter: "blur(2px)",
-    boxShadow: "0px 4px 4px rgba(0, 0, 0, 0.25)",
-  },
-  checkInText: {
-    fontSize: "4.5vh",
-    marginLeft: "2vh",
-    marginTop: "-40vh",
-    color: "#000",
-    fontWeight: "600",
-    position: "fixed" as const,
-  },
-  infoText: {
-    marginLeft: "2vh",
-    fontSize: "26px",
-    color: "#000",
-    marginBottom: "-15px",
-    fontWeight: "600",
-  },
-  btn: {
-    padding: "10px",
-    backgroundColor: "#FBFF00",
-    width: "263px",
-    height: "82px",
-    alignSelf: "center",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: "5vh",
-    borderRadius: "15px",
-    border: "1px solid rgba(0, 0, 0, 0.20)",
-    boxShadow: "0px 4px 4px rgba(0, 0, 0, 0.25)",
-    cursor: "pointer",
-    outline: "none",
-    marginTop: "360px",
-    position: "fixed",
-  },
-  btnText: {
-    fontSize: "27px",
-    color: "#000",
-    fontWeight: "bold",
-  },
 };
 
 export default CheckInScreen;
