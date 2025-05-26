@@ -131,20 +131,27 @@ const CheckInScreen = () => {
 
       // Always get the latest student data from the bridge
       const studentData = await getStudentDataFromBridge();
+      let latitude = 0;
+      let longitude = 0;
+      if (
+        studentData &&
+        typeof studentData.latitude === "number" &&
+        typeof studentData.longitude === "number"
+      ) {
+        latitude = studentData.latitude;
+        longitude = studentData.longitude;
+      }
+
       if (
         !studentData ||
-        !studentData.student_id ||
-        typeof studentData.latitude !== "number" ||
-        typeof studentData.longitude !== "number"
+        !studentData.student_id
       ) {
-        alert("Student data or location is not available. Please try again.");
+        alert("Student data is not available. Please try again.");
         setLoading(false);
         return;
       }
 
       const student_id = Number(studentData.student_id);
-      const latitude = studentData.latitude;
-      const longitude = studentData.longitude;
 
       await postCheckinById(student_id, latitude, longitude, true);
       navigate("/welcome-greeting");
