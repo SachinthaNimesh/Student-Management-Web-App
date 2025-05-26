@@ -16,8 +16,6 @@ const CheckInScreen = () => {
     month: "",
   });
   const [userLocation, setUserLocation] = useState<string | null>(null);
-  const [latitude, setLatitude] = useState<number | null>(null);
-  const [longitude, setLongitude] = useState<number | null>(null);
 
   const reverseGeocode = async (latitude: number, longitude: number) => {
     try {
@@ -61,8 +59,6 @@ const CheckInScreen = () => {
           const { latitude, longitude } = studentData;
           const address = await reverseGeocode(latitude, longitude);
           if (isMounted) {
-            setLatitude(latitude);
-            setLongitude(longitude);
             setUserLocation(address || `Lat: ${latitude}, Lng: ${longitude}`);
           }
         } else if (retries > 0) {
@@ -133,18 +129,22 @@ const CheckInScreen = () => {
     try {
       setLoading(true);
 
-      const studentData = await getStudentDataFromBridge(); // <-- await here
-      if (!studentData || !studentData.student_id) {
-        alert("Student data is not available. Please try again.");
+      // Always get the latest student data from the bridge
+      const studentData = await getStudentDataFromBridge();
+      if (
+        !studentData ||
+        !studentData.student_id ||
+        typeof studentData.latitude !== "number" ||
+        typeof studentData.longitude !== "number"
+      ) {
+        alert("Student data or location is not available. Please try again.");
+        setLoading(false);
         return;
       }
 
       const student_id = Number(studentData.student_id);
-
-      if (!userLocation || !latitude || !longitude) {
-        alert("Location is not available. Please try again.");
-        return;
-      }
+      const latitude = studentData.latitude;
+      const longitude = studentData.longitude;
 
       await postCheckinById(student_id, latitude, longitude, true);
       navigate("/welcome-greeting");
