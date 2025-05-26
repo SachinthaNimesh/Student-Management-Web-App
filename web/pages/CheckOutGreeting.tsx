@@ -46,7 +46,7 @@ const CheckOutGreeting: React.FC = () => {
             textAlign: "center",
           }}
         >
-          {welcomeText} {/* Retained dynamic welcome text */}
+          {welcomeText} 
         </p>
       </div>
     </div>
