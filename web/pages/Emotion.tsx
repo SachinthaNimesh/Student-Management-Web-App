@@ -226,7 +226,8 @@ const Emotion = () => {
 const styles = {
   page: {
     fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-    background: "linear-gradient(135deg, #8B7ED8 0%, #9F8FE8 50%, #A294EA 100%)",
+    // TODO:
+    // background: "linear-gradient(135deg, #8B7ED8 0%, #9F8FE8 50%, #A294EA 100%)",
     minHeight: "100vh",
     display: "flex",
     flexDirection: "column" as const,
