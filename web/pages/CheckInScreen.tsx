@@ -1,8 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { postCheckinById } from "../api/attendanceService";
-import { GOOGLE_API_KEY } from "../config/config";
-import axios from "axios";
 import { getStudentDataFromBridge } from "../api/bridgingService";
 
 // Extracted minimal CSS-in-JS for the design
@@ -48,6 +46,7 @@ const styles = {
     WebkitBackgroundClip: "text",
     WebkitTextFillColor: "transparent",
     backgroundClip: "text",
+    alignItem: "flex-start",
   },
   locationInfo: {
     display: "flex",
@@ -91,77 +90,6 @@ const CheckInScreen = () => {
     month: "",
     fullDate: "",
   });
-  const [userLocation, setUserLocation] = useState<string | null>(null);
-
-  const reverseGeocode = async (latitude: number, longitude: number) => {
-    try {
-      if (!GOOGLE_API_KEY) {
-        throw new Error(
-          "Please provide a valid Google API key in your .env file"
-        );
-      }
-
-      interface GeocodeResponse {
-        status: string;
-        results: { formatted_address: string }[];
-      }
-
-      const response = await axios.get<GeocodeResponse>(
-        `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${GOOGLE_API_KEY}`
-      );
-
-      if (response.data.status === "OK" && response.data.results.length > 0) {
-        return response.data.results[0].formatted_address;
-      } else {
-        throw new Error(`Geocoding API error: ${response.data.status}`);
-      }
-    } catch (error) {
-      console.error("Geocoding error:", error);
-      return "Address lookup failed";
-    }
-  };
-
-  useEffect(() => {
-    let isMounted = true;
-
-    const fetchLocationWithRetry = async () => {
-      try {
-        const studentData = await getStudentDataFromBridge();
-        let latitude = 0;
-        let longitude = 0;
-        if (
-          studentData &&
-          typeof studentData.latitude === "number" &&
-          typeof studentData.longitude === "number"
-        ) {
-          latitude = studentData.latitude;
-          longitude = studentData.longitude;
-        }
-        let address = "";
-        if (latitude !== 0 || longitude !== 0) {
-          address = await reverseGeocode(latitude, longitude);
-        }
-        if (isMounted) {
-          setUserLocation(
-            address && address !== "Address lookup failed"
-              ? address
-              : `Lat: ${latitude}, Lng: ${longitude}`
-          );
-        }
-      } catch (error) {
-        if (isMounted) {
-          console.error("Error fetching location from bridge. Details:", error);
-          setUserLocation("Failed to fetch location");
-        }
-      }
-    };
-
-    fetchLocationWithRetry();
-
-    return () => {
-      isMounted = false;
-    };
-  }, []);
 
   const navigate = useNavigate();
 
@@ -249,7 +177,7 @@ const CheckInScreen = () => {
       </div>
       {/* Main Card */}
       <div style={styles.card}>
-        <h2 style={styles.title}>Ready to Check In?</h2>
+        <h2 style={styles.title}>Check In</h2>
         <div style={styles.locationInfo}>
           <div style={styles.infoRow}>
             <span style={styles.icon}>🕐</span>
@@ -260,12 +188,6 @@ const CheckInScreen = () => {
           <div style={styles.infoRow}>
             <span style={styles.icon}>📅</span>
             <span style={styles.infoText}>{currentDateTime.fullDate}</span>
-          </div>
-          <div style={styles.infoRow}>
-            <span style={styles.icon}>📍</span>
-            <span style={styles.infoText}>
-              {userLocation || "Waiting for location..."}
-            </span>
           </div>
         </div>
         <button

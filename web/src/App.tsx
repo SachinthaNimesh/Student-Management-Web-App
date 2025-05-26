@@ -1,4 +1,3 @@
-import { Paper } from "@mui/material";
 import Header from "../components/Header";
 import CheckInScreen from "../pages/CheckInScreen";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
@@ -8,36 +7,94 @@ import CheckOutScreen from "../pages/CheckOutScreen";
 import Welcome from "../pages/Welcome";
 import Feedback from "../pages/Feedback";
 import CheckOutGreeting from "../pages/CheckOutGreeting";
-import BackgroundImage from "../assets/bg2.jpg";
 function PaperWrapper({ children }: { children: React.ReactNode }) {
   return (
     <div
       style={{
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        height: "100vh",
+        position: "relative",
+        minHeight: "100vh",
+        width: "100vw",
+        overflowX: "hidden",
       }}
     >
-      <Paper
+      {/* Animated Gradient Background */}
+      <div
+        style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          width: "100vw",
+          height: "100vh",
+          zIndex: -1,
+          background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+        }}
+      >
+        <div
+          style={{
+            position: "absolute",
+            width: 80,
+            height: 80,
+            top: "20%",
+            left: "10%",
+            borderRadius: "50%",
+            background: "rgba(255,255,255,0.1)",
+            animation: "float 6s ease-in-out infinite",
+            animationDelay: "0s",
+          }}
+        />
+        <div
+          style={{
+            position: "absolute",
+            width: 60,
+            height: 60,
+            top: "60%",
+            right: "15%",
+            borderRadius: "50%",
+            background: "rgba(255,255,255,0.1)",
+            animation: "float 6s ease-in-out infinite",
+            animationDelay: "2s",
+          }}
+        />
+        <div
+          style={{
+            position: "absolute",
+            width: 100,
+            height: 100,
+            bottom: "30%",
+            left: "20%",
+            borderRadius: "50%",
+            background: "rgba(255,255,255,0.1)",
+            animation: "float 6s ease-in-out infinite",
+            animationDelay: "4s",
+          }}
+        />
+        {/* Keyframes for floating animation */}
+        <style>
+          {`
+            @keyframes float {
+              0%, 100% { transform: translateY(0px) rotate(0deg); }
+              33% { transform: translateY(-20px) rotate(5deg); }
+              66% { transform: translateY(10px) rotate(-3deg); }
+            }
+          `}
+        </style>
+      </div>
+      {/* Main Content */}
+      <div
         style={{
           flex: 1,
-          backgroundImage: `url(${BackgroundImage})`,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          width: "100vw", // Full width of the screen
-          height: "100vh", // Full height of the screen
-          position: "absolute",
-          top: "0", // Align to the top
-          left: "0", // Align to the left
+          minHeight: "100vh",
+          width: "100vw",
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
           flexDirection: "column",
+          position: "relative",
+          zIndex: 1,
         }}
       >
         {children}
-      </Paper>
+      </div>
     </div>
   );
 }

@@ -1,5 +1,4 @@
 import React, { useEffect } from "react";
-import RealTimeClock from "../components/RealTimeClock";
 import { getStudentById } from "../api/studentService";
 import { Student } from "../types/student";
 import ProfilePictureMale from "../assets/profile_male.png";
@@ -16,8 +15,13 @@ const headerStyles = {
     background: "rgba(255,255,255,0.1)",
     backdropFilter: "blur(10px)",
     borderBottom: "1px solid rgba(255,255,255,0.2)",
-    position: "relative" as const,
-    zIndex: 2,
+    position: "fixed" as const, // changed from "relative"
+    top: 0,
+    left: 0,
+    width: "100vw", // ensure full width
+    zIndex: 1000,   // increased zIndex for overlay
+    boxSizing: "border-box" as const,
+    marginBottom: 20,
   },
   greeting: {
     display: "flex",
@@ -35,11 +39,6 @@ const headerStyles = {
     fontSize: 28,
     animation: "wave 2s ease-in-out infinite",
     display: "inline-block",
-  },
-  datetime: {
-    fontSize: 14,
-    color: "rgba(255,255,255,0.8)",
-    marginTop: 5,
   },
   profilePic: {
     width: 50,
@@ -103,9 +102,6 @@ const Header: React.FC = () => {
         <span style={headerStyles.wave} role="img" aria-label="wave">
           👋
         </span>
-        <div style={headerStyles.datetime}>
-          <RealTimeClock />
-        </div>
       </div>
       <div style={headerStyles.profilePic}>
         {student?.gender === "Male" || student?.gender === "Female" ? (
