@@ -21,21 +21,7 @@ type ScreenProps = {
 };
 
 export default function App() {
-  const [studentIdChecked, setStudentIdChecked] = useState(false);
-  const [hasStudentId, setHasStudentId] = useState(false);
 
-  useEffect(() => {
-    const checkStudentId = async () => {
-      const student_id = await AsyncStorage.getItem('student_id');
-      setHasStudentId(!!student_id);
-      setStudentIdChecked(true);
-    };
-    checkStudentId();
-  }, []);
-
-  if (!studentIdChecked) {
-    return null;
-  }
 
   return (
     <NavigationContainer>
@@ -50,25 +36,22 @@ export default function App() {
         }}
       >
         <Stack.Screen name="Welcome" component={Welcome} />
-        {/* Always register OTP screen, but redirect in Welcome if needed */}
         <Stack.Screen name="OTP" component={OTP} />
-        {hasStudentId && (
-          <Stack.Screen
-            name="CheckIn"
-            component={(props: ScreenProps) => (
-              <Layout>
-                <CheckInScreen {...props} />
-              </Layout>
-            )}
-          />
-        )}
+        <Stack.Screen
+          name="CheckIn"
+          component={(props: ScreenProps) => (
+            <Layout>
+              <CheckInScreen {...props} />
+            </Layout>
+          )}
+        />
         {[
           'WelcomeGreeting',
           'Emotions',
           'CheckOut',
           'Feedback',
           'CheckOutGreeting',
-        ].map((name) => (
+        ].map((name: string) => (
           <Stack.Screen
             key={name}
             name={name}
