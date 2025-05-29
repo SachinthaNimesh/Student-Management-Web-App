@@ -79,6 +79,18 @@ const CheckInScreen: React.FC<Props> = ({ navigation }) => {
     return (
       <View style={[styles.container, { backgroundColor: '#0052A5' }]}>
         <Text style={styles.welcomeText}>Welcome!</Text>
+        <View style={{ marginTop: 30 }} />
+        <View style={{
+          width: 60,
+          height: 60,
+          borderRadius: 30,
+          borderWidth: 6,
+          borderColor: '#fff',
+          borderTopColor: '#ff6b6b',
+          alignSelf: 'center',
+          marginBottom: 10,
+        }} />
+        <Text style={{ color: '#fff', fontSize: 18, textAlign: 'center' }}>Loading...</Text>
       </View>
     );
   }
@@ -184,4 +196,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default CheckInScreen; 
+export default CheckInScreen;

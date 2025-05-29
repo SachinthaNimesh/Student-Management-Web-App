@@ -51,13 +51,12 @@ const OTP: React.FC<Props> = ({ navigation }) => {
 
       const data = await response.json();
 
+      // Extract student_id from the response and store in AsyncStorage
       const { success, student_id, message } = data; 
 
       if (!success) {
         throw new Error(message || "Invalid response from server");
       }
-
-      console.log("Student ID:", student_id);
 
       // Store student_id in AsyncStorage
       await AsyncStorage.setItem("student_id", String(student_id));
@@ -149,4 +148,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default OTP; 
+export default OTP;

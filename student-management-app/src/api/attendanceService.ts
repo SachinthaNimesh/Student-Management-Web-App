@@ -9,17 +9,18 @@ export const postCheckIn = async (latitude: number, longitude: number) => {
       throw new Error('Student ID not found');
     }
 
-    const response = await fetch(`${BASE_URL}/check-ins`, {
+    const response = await fetch(`${BASE_URL}/attendance`, {
       method: 'POST',
       headers: {
+        accept: 'application/json',
+        'Student-ID': student_id.trim(),
         'Content-Type': 'application/json',
         'api-key': String(process.env.EXPO_PUBLIC_API_KEY ?? ''),
       },
       body: JSON.stringify({
-        student_id: parseInt(student_id),
-        latitude,
-        longitude,
-        timestamp: new Date().toISOString(),
+        check_in: true,
+        check_in_lat: latitude,
+        check_in_long: longitude,
       }),
     });
 
@@ -42,17 +43,18 @@ export const postCheckOut = async (latitude: number, longitude: number) => {
       throw new Error('Student ID not found');
     }
 
-    const response = await fetch(`${BASE_URL}/check-outs`, {
+    const response = await fetch(`${BASE_URL}/attendance`, {
       method: 'POST',
       headers: {
+        accept: 'application/json',
+        'Student-ID': student_id.trim(),
         'Content-Type': 'application/json',
         'api-key': String(process.env.EXPO_PUBLIC_API_KEY ?? ''),
       },
       body: JSON.stringify({
-        student_id: parseInt(student_id),
-        latitude,
-        longitude,
-        timestamp: new Date().toISOString(),
+        check_in: false,
+        check_out_lat: latitude,
+        check_out_long: longitude,
       }),
     });
 
@@ -66,4 +68,4 @@ export const postCheckOut = async (latitude: number, longitude: number) => {
     console.error('Error posting check-out:', error);
     throw error;
   }
-}; 
+};

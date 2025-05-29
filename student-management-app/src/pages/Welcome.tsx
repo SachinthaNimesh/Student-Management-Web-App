@@ -18,7 +18,7 @@ const Welcome: React.FC<Props> = ({ navigation }) => {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Worky</Text>
-      <Text style={styles.subtitle}>Welcome!</Text>
+      {/* <Text style={styles.subtitle}>Welcome!</Text> */}
     </View>
   );
 };

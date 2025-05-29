@@ -11,17 +11,16 @@ export const postMood = async (mood: MoodType, type: 'checkin' | 'checkout') => 
       throw new Error('Student ID not found');
     }
 
-    const response = await fetch(`${BASE_URL}/moods`, {
+    const response = await fetch(`${BASE_URL}/post-mood`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'student-id': student_id.trim(),
         'api-key': String(process.env.EXPO_PUBLIC_API_KEY ?? ''),
       },
       body: JSON.stringify({
-        student_id: parseInt(student_id),
-        mood,
-        type,
-        timestamp: new Date().toISOString(),
+        emotion: mood,
+        is_daily: type === 'checkin' ? false : true,
       }),
     });
 
@@ -35,4 +34,4 @@ export const postMood = async (mood: MoodType, type: 'checkin' | 'checkout') => 
     console.error('Error posting mood:', error);
     throw error;
   }
-}; 
+};

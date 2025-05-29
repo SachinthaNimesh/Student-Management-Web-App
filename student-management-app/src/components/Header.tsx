@@ -9,9 +9,14 @@ const Header: React.FC = () => {
     const fetchStudentData = async () => {
       try {
         const student = await getStudentById();
-        if (student && student.first_name) {
-          setStudentName(student.first_name);
+        // Handle if API returns an array or object
+        let firstName = '';
+        if (Array.isArray(student) && student.length > 0) {
+          firstName = student[0]?.first_name ?? '';
+        } else if (student && typeof student === 'object') {
+          firstName = student.first_name ?? '';
         }
+        setStudentName(firstName);
       } catch (error) {
         console.error('Error fetching student data:', error);
       }
@@ -45,7 +50,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     backgroundColor: 'rgba(255,255,255,0.1)',
     position: 'absolute',
-    top: 0,
+    top: 20,
     left: 0,
     right: 0,
     zIndex: 1000,
@@ -80,4 +85,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default Header; 
+export default Header;

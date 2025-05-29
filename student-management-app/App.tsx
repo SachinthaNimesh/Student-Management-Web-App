@@ -12,6 +12,8 @@ import Emotion from './src/pages/Emotion';
 import CheckOutScreen from './src/pages/CheckOutScreen';
 import Feedback from './src/pages/Feedback';
 import CheckOutGreeting from './src/pages/CheckOutGreeting';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import React, { useEffect, useState } from 'react';
 
 const Stack = createNativeStackNavigator();
 
@@ -21,11 +23,26 @@ type ScreenProps = {
 };
 
 export default function App() {
+  const [initialRoute, setInitialRoute] = useState<string | null>(null);
+
+  useEffect(() => {
+    const checkStudentId = async () => {
+      const student_id = await AsyncStorage.getItem('student_id');
+      setInitialRoute(student_id ? 'Welcome' : 'OTP');
+    };
+    checkStudentId();
+  }, []);
+
+  if (!initialRoute) {
+    // Optionally render a splash/loading screen here
+    return null;
+  }
+
   return (
     <NavigationContainer>
       <StatusBar style="light" />
       <Stack.Navigator 
-        initialRouteName="Welcome"
+        initialRouteName={initialRoute}
         screenOptions={{
           headerShown: false,
           contentStyle: {

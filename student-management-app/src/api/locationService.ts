@@ -37,7 +37,7 @@ export const useLocation = () => {
         }
 
         locationSubscription = await Location.watchPositionAsync(
-          { accuracy: Location.Accuracy.Highest, timeInterval: 5000, distanceInterval: 10 },
+          { accuracy: Location.Accuracy.Highest, timeInterval: 1000*60, distanceInterval: 10 },
           (deviceLocation) => {
             setLocationInfo({
               coords: deviceLocation.coords,
