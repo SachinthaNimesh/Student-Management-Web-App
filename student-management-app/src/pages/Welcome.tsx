@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 type Props = {
   navigation: NativeStackNavigationProp<any>;
@@ -8,11 +9,24 @@ type Props = {
 
 const Welcome: React.FC<Props> = ({ navigation }) => {
   useEffect(() => {
-    const timer = setTimeout(() => {
-      navigation.replace('OTP');
-    }, 3000);
+    const checkStudentId = async () => {
+      try {
+        const studentId = await AsyncStorage.getItem('student_id');
+        // Wait for 3 seconds before navigating
+        await new Promise(resolve => setTimeout(resolve, 3000));
+        
+        if (studentId) {
+          navigation.replace('CheckIn');
+        } else {
+          navigation.replace('OTP');
+        }
+      } catch (error) {
+        console.error('Error checking student ID:', error);
+        navigation.replace('OTP');
+      }
+    };
 
-    return () => clearTimeout(timer);
+    checkStudentId();
   }, [navigation]);
 
   return (
@@ -28,7 +42,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#0052A5',
+    backgroundColor: '#667eea',
   },
   title: {
     fontSize: 90,

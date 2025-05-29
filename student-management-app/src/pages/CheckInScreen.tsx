@@ -77,7 +77,7 @@ const CheckInScreen: React.FC<Props> = ({ navigation }) => {
 
   if (showWelcome) {
     return (
-      <View style={[styles.container, { backgroundColor: '#0052A5' }]}>
+      <View style={[StyleSheet.absoluteFill, styles.container, { backgroundColor: '#667eea', zIndex: 999 }]}>
         <Text style={styles.welcomeText}>Welcome!</Text>
         <View style={{ marginTop: 30 }} />
         <View style={{
@@ -90,7 +90,6 @@ const CheckInScreen: React.FC<Props> = ({ navigation }) => {
           alignSelf: 'center',
           marginBottom: 10,
         }} />
-        <Text style={{ color: '#fff', fontSize: 18, textAlign: 'center' }}>Loading...</Text>
       </View>
     );
   }
@@ -117,7 +116,7 @@ const CheckInScreen: React.FC<Props> = ({ navigation }) => {
           disabled={loading}
         >
           <Text style={styles.buttonText}>
-            {loading ? 'Loading...' : '✨ Check In Now ✨'}
+            {loading ? 'Loading...' : 'Check In'}
           </Text>
         </TouchableOpacity>
       </View>

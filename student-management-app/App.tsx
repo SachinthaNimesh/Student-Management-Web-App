@@ -2,8 +2,6 @@ import { StatusBar } from 'expo-status-bar';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import Layout from './src/components/Layout';
-
-// Import screens
 import Welcome from './src/pages/Welcome';
 import OTP from './src/pages/OTP';
 import CheckInScreen from './src/pages/CheckInScreen';
@@ -23,26 +21,27 @@ type ScreenProps = {
 };
 
 export default function App() {
-  const [initialRoute, setInitialRoute] = useState<string | null>(null);
+  const [studentIdChecked, setStudentIdChecked] = useState(false);
+  const [hasStudentId, setHasStudentId] = useState(false);
 
   useEffect(() => {
     const checkStudentId = async () => {
       const student_id = await AsyncStorage.getItem('student_id');
-      setInitialRoute(student_id ? 'Welcome' : 'OTP');
+      setHasStudentId(!!student_id);
+      setStudentIdChecked(true);
     };
     checkStudentId();
   }, []);
 
-  if (!initialRoute) {
-    // Optionally render a splash/loading screen here
+  if (!studentIdChecked) {
     return null;
   }
 
   return (
     <NavigationContainer>
       <StatusBar style="light" />
-      <Stack.Navigator 
-        initialRouteName={initialRoute}
+      <Stack.Navigator
+        initialRouteName="Welcome"
         screenOptions={{
           headerShown: false,
           contentStyle: {
@@ -50,20 +49,25 @@ export default function App() {
           },
         }}
       >
-        {/* Welcome screen without Layout wrapper */}
         <Stack.Screen name="Welcome" component={Welcome} />
-        
-        {/* OTP screen without Layout wrapper */}
+        {/* Always register OTP screen, but redirect in Welcome if needed */}
         <Stack.Screen name="OTP" component={OTP} />
-
-        {/* Other screens with Layout wrapper */}
+        {hasStudentId && (
+          <Stack.Screen
+            name="CheckIn"
+            component={(props: ScreenProps) => (
+              <Layout>
+                <CheckInScreen {...props} />
+              </Layout>
+            )}
+          />
+        )}
         {[
-          'CheckIn',
           'WelcomeGreeting',
           'Emotions',
           'CheckOut',
           'Feedback',
-          'CheckOutGreeting'
+          'CheckOutGreeting',
         ].map((name) => (
           <Stack.Screen
             key={name}
@@ -72,8 +76,6 @@ export default function App() {
               <Layout>
                 {(() => {
                   switch (name) {
-                    case 'CheckIn':
-                      return <CheckInScreen {...props} />;
                     case 'WelcomeGreeting':
                       return <WelcomeGreeting {...props} />;
                     case 'Emotions':

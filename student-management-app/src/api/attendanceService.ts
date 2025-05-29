@@ -53,8 +53,8 @@ export const postCheckOut = async (latitude: number, longitude: number) => {
       },
       body: JSON.stringify({
         check_in: false,
-        check_out_lat: latitude,
-        check_out_long: longitude,
+        check_in_lat: latitude, // Use check_in_lat for check-out
+        check_in_long: longitude,
       }),
     });
 

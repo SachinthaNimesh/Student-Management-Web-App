@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Modal } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { postMood, MoodType } from '../api/moodService';
+import { postCheckOut } from '../api/attendanceService';
+import { useLocation } from '../api/locationService';
 
 type Props = {
   navigation: NativeStackNavigationProp<any>;
@@ -47,6 +49,7 @@ const popupContent: Record<
 const Emotion: React.FC<Props> = ({ navigation }) => {
   const [loading, setLoading] = useState(false);
   const [popup, setPopup] = useState<MoodType | null>(null);
+  const { latitude, longitude } = useLocation();
 
   const handleMoodPress = async (emotion: MoodType) => {
     try {
@@ -56,6 +59,23 @@ const Emotion: React.FC<Props> = ({ navigation }) => {
     } catch (error) {
       console.error('Error posting mood:', error);
       alert(error instanceof Error ? error.message : 'An error occurred while saving your mood.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleEarlyCheckout = async () => {
+    try {
+      setLoading(true);
+      if (latitude === null || longitude === null) {
+        throw new Error('Location data is not available. Please try again.');
+      }
+
+      await postCheckOut(latitude, longitude);
+      navigation.replace('Feedback');
+    } catch (error) {
+      console.error('Error during early checkout:', error);
+      alert(error instanceof Error ? error.message : 'An error occurred during checkout. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -101,6 +121,19 @@ const Emotion: React.FC<Props> = ({ navigation }) => {
         </View>
       </View>
 
+      <View style={styles.checkoutCard}>
+        <TouchableOpacity
+          style={[styles.checkoutButton, loading && styles.buttonDisabled]}
+          onPress={handleEarlyCheckout}
+          disabled={loading}
+        >
+          <Text style={styles.homeIcon}>🏠</Text>
+          <Text style={styles.checkoutText}>
+            {loading ? 'Loading...' : 'Early Checkout'}
+          </Text>
+        </TouchableOpacity>
+      </View>
+
       <Modal
         visible={popup !== null}
         transparent
@@ -131,9 +164,7 @@ const Emotion: React.FC<Props> = ({ navigation }) => {
 
               <TouchableOpacity
                 style={styles.modalButton}
-                onPress={() => {
-                  setPopup(null);
-                }}
+                onPress={() => setPopup(null)}
               >
                 <Text style={styles.modalButtonText}>OK</Text>
               </TouchableOpacity>
