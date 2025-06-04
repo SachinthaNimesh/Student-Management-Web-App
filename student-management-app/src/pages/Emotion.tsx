@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Modal } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { postMood, MoodType } from '../api/moodService';
 import { postCheckOut } from '../api/attendanceService';
@@ -9,56 +9,30 @@ type Props = {
   navigation: NativeStackNavigationProp<any>;
 };
 
-const popupContent: Record<
-  MoodType,
-  {
-    emoji: string;
-    title: string;
-    message: string;
-    strategies?: { icon: string; title: string; desc: string }[];
-  }
-> = {
-  happy: {
-    emoji: '🌟',
-    title: 'You are Happy!',
-    message: "That's great!",
-  },
-  neutral: {
-    emoji: '🌱',
-    title: 'You feel Okay',
-    message: 'Maybe try something simple to refresh.',
-    strategies: [
-      { icon: '💨', title: 'Breathe', desc: 'Take a deep breath.' },
-      { icon: '🚶‍♀️', title: 'Walk', desc: 'Go for a short walk.' },
-      { icon: '🎵', title: 'Music', desc: 'Listen to your favorite song.' },
-    ],
-  },
-  sad: {
-    emoji: '🤗',
-    title: 'You feel Sad',
-    message: "It's okay to feel sad. Try to take care of yourself.",
-    strategies: [
-      { icon: '💨', title: 'Breathe', desc: 'Take a deep breath.' },
-      { icon: '📝', title: 'Write', desc: 'Write down your feelings.' },
-      { icon: '💙', title: 'Help', desc: 'Talk to someone you trust.' },
-      { icon: '🛁', title: 'Rest', desc: 'Take a break and relax.' },
-    ],
-  },
+const moodEmojis = {
+  happy: '😊',
+  neutral: '😐',
+  sad: '😢',
 };
 
 const Emotion: React.FC<Props> = ({ navigation }) => {
   const [loading, setLoading] = useState(false);
-  const [popup, setPopup] = useState<MoodType | null>(null);
+  const [activeMood, setActiveMood] = useState<MoodType | null>(null);
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
   const { latitude, longitude } = useLocation();
 
   const handleMoodPress = async (emotion: MoodType) => {
     try {
       setLoading(true);
+      setActiveMood(emotion);
       await postMood(emotion, 'checkin');
-      setPopup(emotion);
+      setTimeout(() => {
+        setActiveMood(null);
+      }, 1000);
     } catch (error) {
       console.error('Error posting mood:', error);
       alert(error instanceof Error ? error.message : 'An error occurred while saving your mood.');
+      setActiveMood(null);
     } finally {
       setLoading(false);
     }
@@ -66,40 +40,33 @@ const Emotion: React.FC<Props> = ({ navigation }) => {
 
   const handleEarlyCheckout = async () => {
     try {
+      setCheckoutLoading(true);
       setLoading(true);
       if (latitude === null || longitude === null) {
         throw new Error('Location data is not available. Please try again.');
       }
-
       await postCheckOut(latitude, longitude);
       navigation.replace('Feedback');
     } catch (error) {
       console.error('Error during early checkout:', error);
       alert(error instanceof Error ? error.message : 'An error occurred during checkout. Please try again.');
     } finally {
+      setCheckoutLoading(false);
       setLoading(false);
     }
-  };
-
-  const moodEmojis = {
-    happy: '😊',
-    neutral: '😐',
-    sad: '😢',
   };
 
   return (
     <View style={styles.container}>
       <View style={styles.moodCard}>
-        <TouchableOpacity onPress={() => navigation.replace('CheckOut')}>
-          <Text style={styles.title}>How are you feeling Now?</Text>
-        </TouchableOpacity>
+        <Text style={styles.title}>How are you feeling Now?</Text>
         <View style={styles.moodButtons}>
           {(['happy', 'neutral', 'sad'] as const).map((mood) => (
             <TouchableOpacity
               key={mood}
-              style={[styles.moodButton, popup === mood && styles.selectedMood]}
+              style={[styles.moodButton]}
               onPress={() => handleMoodPress(mood)}
-              disabled={loading}
+              disabled={loading || activeMood !== null}
             >
               <View
                 style={[
@@ -116,6 +83,13 @@ const Emotion: React.FC<Props> = ({ navigation }) => {
               <Text style={styles.moodText}>
                 {mood.charAt(0).toUpperCase() + mood.slice(1)}
               </Text>
+              <View style={styles.flexGrow} />
+              {activeMood === mood && (
+                <ActivityIndicator
+                  size="small"
+                  color="#8B7ED8"
+                />
+              )}
             </TouchableOpacity>
           ))}
         </View>
@@ -123,55 +97,20 @@ const Emotion: React.FC<Props> = ({ navigation }) => {
 
       <View style={styles.checkoutCard}>
         <TouchableOpacity
-          style={[styles.checkoutButton, loading && styles.buttonDisabled]}
+          style={[styles.checkoutButton, (loading || checkoutLoading) && styles.buttonDisabled]}
           onPress={handleEarlyCheckout}
-          disabled={loading}
+          disabled={loading || checkoutLoading}
         >
-          <Text style={styles.homeIcon}>🏠</Text>
+          {checkoutLoading ? (
+            <ActivityIndicator size="small" color="#8B7ED8" style={{ marginRight: 10 }} />
+          ) : (
+            <Text style={styles.homeIcon}>🏠</Text>
+          )}
           <Text style={styles.checkoutText}>
-            {loading ? 'Loading...' : 'Early Checkout'}
+            {checkoutLoading ? 'Loading...' : 'Checkout'}
           </Text>
         </TouchableOpacity>
       </View>
-
-      <Modal
-        visible={popup !== null}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setPopup(null)}
-      >
-        {popup && (
-          <View style={styles.modalOverlay}>
-            <View style={styles.modalContent}>
-              <Text style={styles.popupEmoji}>{popupContent[popup].emoji}</Text>
-              <Text style={styles.popupTitle}>{popupContent[popup].title}</Text>
-              <Text style={styles.popupMessage}>
-                {popupContent[popup].message}
-              </Text>
-
-              {popupContent[popup].strategies && (
-                <View style={styles.strategies}>
-                  {popupContent[popup].strategies!.map((strategy, index) => (
-                    <View key={index} style={styles.strategyItem}>
-                      <Text style={styles.strategyTitle}>
-                        {strategy.icon} {strategy.title}
-                      </Text>
-                      <Text style={styles.strategyDesc}>{strategy.desc}</Text>
-                    </View>
-                  ))}
-                </View>
-              )}
-
-              <TouchableOpacity
-                style={styles.modalButton}
-                onPress={() => setPopup(null)}
-              >
-                <Text style={styles.modalButtonText}>OK</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        )}
-      </Modal>
     </View>
   );
 };
@@ -204,6 +143,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 10,
+  },
+  flexGrow: {
+    flex: 1,
   },
   selectedMood: {
     backgroundColor: 'rgba(232, 230, 255, 1)',
@@ -259,69 +201,6 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#4A4A6A',
   },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  modalContent: {
-    backgroundColor: 'white',
-    borderRadius: 20,
-    padding: 30,
-    width: '90%',
-    maxWidth: 320,
-    alignItems: 'center',
-  },
-  popupEmoji: {
-    fontSize: 60,
-    marginBottom: 20,
-  },
-  popupTitle: {
-    fontSize: 24,
-    fontWeight: '700',
-    marginBottom: 15,
-    color: '#4A4A6A',
-  },
-  popupMessage: {
-    fontSize: 16,
-    color: '#6B6B6B',
-    marginBottom: 25,
-    textAlign: 'center',
-  },
-  strategies: {
-    width: '100%',
-  },
-  strategyItem: {
-    backgroundColor: '#F8F9FF',
-    borderRadius: 12,
-    padding: 15,
-    marginBottom: 12,
-    borderLeftWidth: 4,
-    borderLeftColor: '#8B7ED8',
-  },
-  strategyTitle: {
-    color: '#8B7ED8',
-    fontSize: 14,
-    fontWeight: '600',
-    marginBottom: 5,
-  },
-  strategyDesc: {
-    color: '#6B6B6B',
-    fontSize: 13,
-  },
-  modalButton: {
-    backgroundColor: '#8B7ED8',
-    paddingHorizontal: 25,
-    paddingVertical: 12,
-    borderRadius: 25,
-    marginTop: 10,
-  },
-  modalButtonText: {
-    color: 'white',
-    fontWeight: '600',
-    fontSize: 14,
-  },
 });
 
-export default Emotion; 
+export default Emotion;

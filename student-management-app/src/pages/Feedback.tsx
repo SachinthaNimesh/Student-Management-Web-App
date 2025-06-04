@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { postMood, MoodType } from '../api/moodService';
 
@@ -7,27 +7,32 @@ type Props = {
   navigation: NativeStackNavigationProp<any>;
 };
 
+const moodEmojis = {
+  happy: '😊',
+  neutral: '😐',
+  sad: '😢',
+};
+
 const Feedback: React.FC<Props> = ({ navigation }) => {
   const [loading, setLoading] = useState(false);
+  const [activeMood, setActiveMood] = useState<MoodType | null>(null);
 
   const handleMoodPress = async (emotion: MoodType) => {
     try {
       setLoading(true);
+      setActiveMood(emotion);
       await postMood(emotion, 'checkout');
-      // Navigate to checkout greeting after a delay
-      setTimeout(() => navigation.replace('CheckOutGreeting'), 2000);
+      setTimeout(() => {
+        setActiveMood(null);
+        navigation.replace('CheckOutGreeting');
+      }, 1000);
     } catch (error) {
       console.error('Error posting mood:', error);
       alert(error instanceof Error ? error.message : 'An error occurred while saving your mood.');
+      setActiveMood(null);
     } finally {
       setLoading(false);
     }
-  };
-
-  const moodEmojis = {
-    happy: '😊',
-    neutral: '😐',
-    sad: '😢',
   };
 
   return (
@@ -40,7 +45,7 @@ const Feedback: React.FC<Props> = ({ navigation }) => {
               key={mood}
               style={styles.moodButton}
               onPress={() => handleMoodPress(mood)}
-              disabled={loading}
+              disabled={loading || activeMood !== null}
             >
               <View
                 style={[
@@ -57,6 +62,10 @@ const Feedback: React.FC<Props> = ({ navigation }) => {
               <Text style={styles.moodText}>
                 {mood.charAt(0).toUpperCase() + mood.slice(1)}
               </Text>
+              <View style={styles.flexGrow} />
+              {activeMood === mood && (
+                <ActivityIndicator size="small" color="#8B7ED8" />
+              )}
             </TouchableOpacity>
           ))}
         </View>
@@ -94,6 +103,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 10,
   },
+  flexGrow: {
+    flex: 1,
+  },
   moodEmoji: {
     width: 35,
     height: 35,
@@ -121,4 +133,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default Feedback; 
+export default Feedback;
