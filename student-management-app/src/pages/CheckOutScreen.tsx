@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useLocation } from '../api/locationService';
 import { postCheckOut } from '../api/attendanceService';
+import NetInfo from '@react-native-community/netinfo';
 
 type Props = {
   navigation: NativeStackNavigationProp<any>;
@@ -11,23 +12,62 @@ type Props = {
 const CheckOutScreen: React.FC<Props> = ({ navigation }) => {
   const [loading, setLoading] = useState(false);
   const { latitude, longitude } = useLocation();
+  const [showNoInternet, setShowNoInternet] = useState(false);
+
+  useEffect(() => {
+    if (!showNoInternet) return;
+    const unsubscribe = NetInfo.addEventListener(state => {
+      if (state.isConnected) {
+        setShowNoInternet(false);
+        // No need to relaunch the app, just hide the no internet card
+      }
+    });
+    return () => unsubscribe();
+  }, [showNoInternet]);
 
   const handleCheckOut = async () => {
     try {
       setLoading(true);
-      if (latitude === null || longitude === null) {
-        throw new Error('Location data is not available. Please try again.');
+      if (latitude == null || longitude == null) {
+        setLoading(false);
+        return alert('Location data is not available. Please enable location services and try again.');
       }
 
       await postCheckOut(latitude, longitude);
       navigation.replace('Feedback');
-    } catch (error) {
-      console.error('An error occurred during check-out:', error);
-      alert(error instanceof Error ? error.message : 'An error occurred during check-out. Please try again.');
+    } catch (error: any) {
+      if (
+        typeof error?.message === 'string' &&
+        (
+          error.message.toLowerCase().includes('network') ||
+          error.message.toLowerCase().includes('internet') ||
+          error.message.toLowerCase().includes('connection') ||
+          error.message.toLowerCase().includes('failed to fetch')
+        )
+      ) {
+        setShowNoInternet(true);
+      } else {
+        console.error('An error occurred during check-out:', error);
+        alert(error instanceof Error ? error.message : 'An error occurred during check-out. Please try again.');
+      }
     } finally {
       setLoading(false);
     }
   };
+
+  if (showNoInternet) {
+    return (
+      <View style={[StyleSheet.absoluteFill, styles.container, { backgroundColor: '#667eea', zIndex: 999, justifyContent: 'center', alignItems: 'center', padding: 0 }]}>
+        <View/>
+        <View style={styles.noInternetCard}>
+          <Text style={styles.noInternetEmoji}>🛜</Text>
+          <Text style={styles.noInternetTitle}>No Internet Connection</Text>
+          <Text style={styles.noInternetMsg}>Turn Mobile Data or Wifi On 🛜</Text>
+          <Text style={styles.noInternetWait}>Waiting for connection...</Text>
+        </View>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -58,6 +98,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: '#667eea',
     padding: 20,
   },
   card: {
@@ -117,6 +158,42 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255,255,255,0.3)',
     borderTopColor: 'white',
   },
+  noInternetCard: {
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    padding: 32,
+    alignItems: 'center',
+    elevation: 8,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowOffset: { width: 0, height: 4 },
+    shadowRadius: 12,
+    minWidth: 260,
+    maxWidth: 320,
+    zIndex: 2,
+  },
+  noInternetEmoji: {
+    fontSize: 40,
+    marginBottom: 12,
+  },
+  noInternetTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#2c3e50',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  noInternetMsg: {
+    fontSize: 16,
+    color: '#555',
+    textAlign: 'center',
+    marginBottom: 16,
+  },
+  noInternetWait: {
+    fontSize: 14,
+    color: '#aaa',
+    textAlign: 'center',
+  },
 });
 
-export default CheckOutScreen; 
+export default CheckOutScreen;

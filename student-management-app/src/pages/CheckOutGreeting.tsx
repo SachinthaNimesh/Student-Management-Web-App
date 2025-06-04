@@ -13,7 +13,7 @@ const CheckOutGreeting: React.FC<Props> = ({ navigation }) => {
     const messages = [
       "Great job today! 🎉",
       "Enjoy your time off! 🌟",
-      "Relax and recharge! 🌈",
+      "Relax and recharge! 😀",
       "See you next time! 👋",
       "Take care! 🌞",
       "Have a wonderful evening! 🌙",

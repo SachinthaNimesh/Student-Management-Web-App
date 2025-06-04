@@ -3,6 +3,8 @@ import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useLocation } from '../api/locationService';
 import { postCheckIn } from '../api/attendanceService';
+import NetInfo from '@react-native-community/netinfo';
+import * as Updates from 'expo-updates';
 
 type Props = {
   navigation: NativeStackNavigationProp<any>;
@@ -20,6 +22,7 @@ const CheckInScreen: React.FC<Props> = ({ navigation }) => {
 
   const { latitude, longitude } = useLocation();
   const [showWelcome, setShowWelcome] = useState(true);
+  const [showNoInternet, setShowNoInternet] = useState(false);
 
   useEffect(() => {
     const timer = setTimeout(() => setShowWelcome(false), 2000);
@@ -58,22 +61,63 @@ const CheckInScreen: React.FC<Props> = ({ navigation }) => {
     return () => clearInterval(intervalId);
   }, [showWelcome]);
 
+  useEffect(() => {
+    if (!showNoInternet) return;
+    const unsubscribe = NetInfo.addEventListener(state => {
+      if (state.isConnected) {
+        setShowNoInternet(false);
+        // No need to relaunch the app, just hide the no internet card
+      }
+    });
+    return () => unsubscribe();
+  }, [showNoInternet]);
+
   const handleCheckIn = async () => {
     try {
       setLoading(true);
-      if (latitude === null || longitude === null) {
-        throw new Error('Location data is not available. Please try again.');
+      if (latitude == null || longitude == null) {
+        setLoading(false);
+        return alert('Location data is not available. Please enable location services and try again.');
       }
 
       await postCheckIn(latitude, longitude);
       navigation.replace('WelcomeGreeting');
-    } catch (error) {
-      console.error('An error occurred during check-in:', error);
-      alert(error instanceof Error ? error.message : 'An error occurred during check-in. Please try again.');
+    } catch (error: any) {
+      // Show popup if network/connection error
+      if (
+        typeof error?.message === 'string' &&
+        (
+          error.message.toLowerCase().includes('network') ||
+          error.message.toLowerCase().includes('internet') ||
+          error.message.toLowerCase().includes('connection') ||
+          error.message.toLowerCase().includes('failed to fetch')
+        )
+      ) {
+        setShowNoInternet(true);
+      } else {
+        console.error('An error occurred during check-in:', error);
+        alert(error instanceof Error ? error.message : 'An error occurred during check-in. Please try again.');
+      }
     } finally {
       setLoading(false);
     }
   };
+
+  if (showNoInternet) {
+    return (
+      <View style={[StyleSheet.absoluteFill, styles.container, { zIndex: 999, justifyContent: 'center', alignItems: 'center', padding: 0 }]}>
+        {/* Fullscreen overlay card */}
+        <View/>
+        {/* Centered popup card */}
+        <View style={styles.noInternetCard}>
+          <Text style={styles.noInternetEmoji}>🛜</Text>
+          <Text style={styles.noInternetTitle}>No Internet Connection</Text>
+          <Text style={styles.noInternetMsg}>Turn Mobile Data or Wifi On 🛜</Text>
+          <Text style={styles.noInternetWait}>Waiting for connection...</Text>
+        </View>
+      </View>
+    );
+  }
 
   if (showWelcome) {
     return (
@@ -129,7 +173,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'transparent',
+    backgroundColor: '#667eea',
     padding: 20,
   },
   welcomeText: {
@@ -192,6 +236,43 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
     textTransform: 'uppercase',
+  },
+  
+  noInternetCard: {
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    padding: 32,
+    alignItems: 'center',
+    elevation: 8,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowOffset: { width: 0, height: 4 },
+    shadowRadius: 12,
+    minWidth: 260,
+    maxWidth: 320,
+    zIndex: 2,
+  },
+  noInternetEmoji: {
+    fontSize: 40,
+    marginBottom: 12,
+  },
+  noInternetTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#2c3e50',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  noInternetMsg: {
+    fontSize: 16,
+    color: '#555',
+    textAlign: 'center',
+    marginBottom: 16,
+  },
+  noInternetWait: {
+    fontSize: 14,
+    color: '#aaa',
+    textAlign: 'center',
   },
 });
 

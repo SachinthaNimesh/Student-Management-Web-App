@@ -14,7 +14,7 @@ const WelcomeGreeting: React.FC<Props> = ({ navigation }) => {
       "Let's do this! 💪",
       "Good morning! 😊",
       "We can do it! 👍",
-      "Stay happy! 🌈",
+      "Stay happy! 😊",
       "You are great! 🌟",
       "Today will be good! 😊",
       "Keep smiling! 😄",

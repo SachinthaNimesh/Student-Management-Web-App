@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { postMood, MoodType } from '../api/moodService';
 import { postCheckOut } from '../api/attendanceService';
 import { useLocation } from '../api/locationService';
+import NetInfo from '@react-native-community/netinfo';
 
 type Props = {
   navigation: NativeStackNavigationProp<any>;
@@ -20,6 +21,19 @@ const Emotion: React.FC<Props> = ({ navigation }) => {
   const [activeMood, setActiveMood] = useState<MoodType | null>(null);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const { latitude, longitude } = useLocation();
+  const [showNoInternet, setShowNoInternet] = useState(false);
+
+  useEffect(() => {
+    if (!showNoInternet) return;
+    const unsubscribe = NetInfo.addEventListener(state => {
+      if (state.isConnected) {
+        setShowNoInternet(false);
+        setActiveMood(null); // Ensure emoji buttons are re-enabled
+        setLoading(false);   // Also reset loading state
+      }
+    });
+    return () => unsubscribe();
+  }, [showNoInternet]);
 
   const handleMoodPress = async (emotion: MoodType) => {
     try {
@@ -28,11 +42,23 @@ const Emotion: React.FC<Props> = ({ navigation }) => {
       await postMood(emotion, 'checkin');
       setTimeout(() => {
         setActiveMood(null);
-      }, 1000);
-    } catch (error) {
-      console.error('Error posting mood:', error);
-      alert(error instanceof Error ? error.message : 'An error occurred while saving your mood.');
-      setActiveMood(null);
+      }, 1000); // disables all emoji buttons for 1 second
+    } catch (error: any) {
+      if (
+        typeof error?.message === 'string' &&
+        (
+          error.message.toLowerCase().includes('network') ||
+          error.message.toLowerCase().includes('internet') ||
+          error.message.toLowerCase().includes('connection') ||
+          error.message.toLowerCase().includes('failed to fetch')
+        )
+      ) {
+        setShowNoInternet(true);
+      } else {
+        console.error('Error posting mood:', error);
+        alert(error instanceof Error ? error.message : 'An error occurred while saving your mood.');
+        setActiveMood(null);
+      }
     } finally {
       setLoading(false);
     }
@@ -43,18 +69,46 @@ const Emotion: React.FC<Props> = ({ navigation }) => {
       setCheckoutLoading(true);
       setLoading(true);
       if (latitude === null || longitude === null) {
-        throw new Error('Location data is not available. Please try again.');
+        setCheckoutLoading(false);
+        setLoading(false);
+        return alert('Location data is not available. Please try again.');
       }
       await postCheckOut(latitude, longitude);
       navigation.replace('Feedback');
-    } catch (error) {
-      console.error('Error during early checkout:', error);
-      alert(error instanceof Error ? error.message : 'An error occurred during checkout. Please try again.');
+    } catch (error: any) {
+      if (
+        typeof error?.message === 'string' &&
+        (
+          error.message.toLowerCase().includes('network') ||
+          error.message.toLowerCase().includes('internet') ||
+          error.message.toLowerCase().includes('connection') ||
+          error.message.toLowerCase().includes('failed to fetch')
+        )
+      ) {
+        setShowNoInternet(true);
+      } else {
+        console.error('Error during early checkout:', error);
+        alert(error instanceof Error ? error.message : 'An error occurred during checkout. Please try again.');
+      }
     } finally {
       setCheckoutLoading(false);
       setLoading(false);
     }
   };
+
+  if (showNoInternet) {
+    return (
+      <View style={[StyleSheet.absoluteFill, styles.container, { backgroundColor: '#667eea', zIndex: 999, justifyContent: 'center', alignItems: 'center', padding: 0 }]}>
+        <View/>
+        <View style={styles.noInternetCard}>
+          <Text style={styles.noInternetEmoji}>🛜</Text>
+          <Text style={styles.noInternetTitle}>No Internet Connection</Text>
+          <Text style={styles.noInternetMsg}>Turn Mobile Data or Wifi On 🛜</Text>
+          <Text style={styles.noInternetWait}>Waiting for connection...</Text>
+        </View>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -84,12 +138,7 @@ const Emotion: React.FC<Props> = ({ navigation }) => {
                 {mood.charAt(0).toUpperCase() + mood.slice(1)}
               </Text>
               <View style={styles.flexGrow} />
-              {activeMood === mood && (
-                <ActivityIndicator
-                  size="small"
-                  color="#8B7ED8"
-                />
-              )}
+              {/* Loader removed, just disables all buttons for 1 second */}
             </TouchableOpacity>
           ))}
         </View>
@@ -97,9 +146,9 @@ const Emotion: React.FC<Props> = ({ navigation }) => {
 
       <View style={styles.checkoutCard}>
         <TouchableOpacity
-          style={[styles.checkoutButton, (loading || checkoutLoading) && styles.buttonDisabled]}
+          style={[styles.checkoutButton, checkoutLoading && styles.buttonDisabled]}
           onPress={handleEarlyCheckout}
-          disabled={loading || checkoutLoading}
+          disabled={checkoutLoading}
         >
           {checkoutLoading ? (
             <ActivityIndicator size="small" color="#8B7ED8" style={{ marginRight: 10 }} />
@@ -200,6 +249,42 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '600',
     color: '#4A4A6A',
+  },
+  noInternetCard: {
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    padding: 32,
+    alignItems: 'center',
+    elevation: 8,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowOffset: { width: 0, height: 4 },
+    shadowRadius: 12,
+    minWidth: 260,
+    maxWidth: 320,
+    zIndex: 2,
+  },
+  noInternetEmoji: {
+    fontSize: 40,
+    marginBottom: 12,
+  },
+  noInternetTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#2c3e50',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  noInternetMsg: {
+    fontSize: 16,
+    color: '#555',
+    textAlign: 'center',
+    marginBottom: 16,
+  },
+  noInternetWait: {
+    fontSize: 14,
+    color: '#aaa',
+    textAlign: 'center',
   },
 });
 
