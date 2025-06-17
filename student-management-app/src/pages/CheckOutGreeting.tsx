@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, BackHandler } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 type Props = {
@@ -24,10 +24,13 @@ const CheckOutGreeting: React.FC<Props> = ({ navigation }) => {
 
     const timer = setTimeout(() => {
       navigation.replace('Welcome');
+      setTimeout(() => {
+        BackHandler.exitApp();
+      }, 500); // Give time for navigation before exit
     }, 3000);
 
     return () => clearTimeout(timer);
-  }, [navigation]);
+  }, []);// [navigation]
 
   return (
     <View style={styles.container}>
@@ -60,4 +63,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default CheckOutGreeting; 
+export default CheckOutGreeting;

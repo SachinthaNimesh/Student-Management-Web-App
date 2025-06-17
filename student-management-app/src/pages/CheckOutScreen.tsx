@@ -19,7 +19,6 @@ const CheckOutScreen: React.FC<Props> = ({ navigation }) => {
     const unsubscribe = NetInfo.addEventListener(state => {
       if (state.isConnected) {
         setShowNoInternet(false);
-        // No need to relaunch the app, just hide the no internet card
       }
     });
     return () => unsubscribe();

@@ -10,7 +10,6 @@ import Emotion from './src/pages/Emotion';
 import CheckOutScreen from './src/pages/CheckOutScreen';
 import Feedback from './src/pages/Feedback';
 import CheckOutGreeting from './src/pages/CheckOutGreeting';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { useEffect, useState } from 'react';
 
 const Stack = createNativeStackNavigator();
@@ -21,8 +20,7 @@ type ScreenProps = {
 };
 
 export default function App() {
-
-
+  
   return (
     <NavigationContainer>
       <StatusBar style="light" />
