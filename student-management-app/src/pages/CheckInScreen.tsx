@@ -4,6 +4,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useLocation } from '../api/locationService';
 import { postCheckIn } from '../api/attendanceService';
 import NetInfo from '@react-native-community/netinfo';
+import FloatingActionButton from '../components/FAB';
 
 type Props = {
   navigation: NativeStackNavigationProp<any>;
@@ -74,12 +75,27 @@ const CheckInScreen: React.FC<Props> = ({ navigation }) => {
   const handleCheckIn = async () => {
     try {
       setLoading(true);
-      if (latitude == null || longitude == null) {
+
+      // Retry for up to 15 seconds if location is not available
+      let retries = 0;
+      let maxRetries = 15;
+      let lat = latitude;
+      let lon = longitude;
+
+      while ((lat == null || lon == null) && retries < maxRetries) {
+        await new Promise(res => setTimeout(res, 1000));
+        retries++;
+        // Try to get latest values
+        lat = latitude;
+        lon = longitude;
+      }
+
+      if (lat == null || lon == null) {
         setLoading(false);
         return alert('Location data is not available. Please enable location services and try again.');
       }
 
-      await postCheckIn(latitude, longitude);
+      await postCheckIn(lat, lon);
       navigation.replace('WelcomeGreeting');
     } catch (error: any) {
       // Show popup if network/connection error
@@ -163,6 +179,7 @@ const CheckInScreen: React.FC<Props> = ({ navigation }) => {
           </Text>
         </TouchableOpacity>
       </View>
+      
     </View>
   );
 };
@@ -274,5 +291,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
 });
+
 
 export default CheckInScreen;

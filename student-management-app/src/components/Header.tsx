@@ -60,7 +60,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     backgroundColor: 'rgba(255,255,255,0.1)',
     position: 'absolute',
-    top: 30,
+    top: 30, // changed from 30 to 0
     left: 0,
     right: 0,
     zIndex: 1000,

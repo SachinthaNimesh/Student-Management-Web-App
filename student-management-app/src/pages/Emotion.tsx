@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { postMood, MoodType } from '../api/moodService';
 import { postCheckOut } from '../api/attendanceService';
 import { useLocation } from '../api/locationService';
 import NetInfo from '@react-native-community/netinfo';
+import FloatingActionButton from '../components/FAB';
 
 type Props = {
   navigation: NativeStackNavigationProp<any>;
@@ -28,8 +29,8 @@ const Emotion: React.FC<Props> = ({ navigation }) => {
     const unsubscribe = NetInfo.addEventListener(state => {
       if (state.isConnected) {
         setShowNoInternet(false);
-        setActiveMood(null); // Ensure emoji buttons are re-enabled
-        setLoading(false);   // Also reset loading state
+        setActiveMood(null);
+        setLoading(false);
       }
     });
     return () => unsubscribe();
@@ -42,7 +43,7 @@ const Emotion: React.FC<Props> = ({ navigation }) => {
       await postMood(emotion, 'checkin');
       setTimeout(() => {
         setActiveMood(null);
-      }, 1000); // disables all emoji buttons for 1 second
+      }, 1000);
     } catch (error: any) {
       if (
         typeof error?.message === 'string' &&
@@ -64,7 +65,8 @@ const Emotion: React.FC<Props> = ({ navigation }) => {
     }
   };
 
-  const handleEarlyCheckout = async () => {
+  // --- Checkout flow extracted for FAB ---
+  const handleEarlyCheckout = useCallback(async () => {
     try {
       setCheckoutLoading(true);
       setLoading(true);
@@ -94,7 +96,7 @@ const Emotion: React.FC<Props> = ({ navigation }) => {
       setCheckoutLoading(false);
       setLoading(false);
     }
-  };
+  }, [latitude, longitude, navigation]);
 
   if (showNoInternet) {
     return (
@@ -112,53 +114,50 @@ const Emotion: React.FC<Props> = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
-      <View style={styles.moodCard}>
-        <Text style={styles.title}>How are you feeling Now?</Text>
-        <View style={styles.moodButtons}>
-          {(['happy', 'neutral', 'sad'] as const).map((mood) => (
-            <TouchableOpacity
-              key={mood}
-              style={[styles.moodButton]}
-              onPress={() => handleMoodPress(mood)}
-              disabled={loading || activeMood !== null}
-            >
-              <View
-                style={[
-                  styles.moodEmoji,
-                  mood === 'happy'
-                    ? styles.happy
-                    : mood === 'neutral'
-                    ? styles.neutral
-                    : styles.sad,
-                ]}
+      <View style={styles.headerSpacer} />
+      <View style={styles.contentWrapper}>
+        <View style={styles.moodCard}>
+          <Text style={styles.title}>How are you feeling Now?</Text>
+          <View style={styles.moodButtons}>
+            {(['happy', 'neutral', 'sad'] as const).map((mood) => (
+              <TouchableOpacity
+                key={mood}
+                style={[styles.moodButton]}
+                onPress={() => handleMoodPress(mood)}
+                disabled={loading || activeMood !== null}
               >
-                <Text style={styles.emojiText}>{moodEmojis[mood]}</Text>
-              </View>
-              <Text style={styles.moodText}>
-                {mood.charAt(0).toUpperCase() + mood.slice(1)}
-              </Text>
-              <View style={styles.flexGrow} />
-              {/* Loader removed, just disables all buttons for 1 second */}
-            </TouchableOpacity>
-          ))}
+                <View
+                  style={[
+                    styles.moodEmoji,
+                    mood === 'happy'
+                      ? styles.happy
+                      : mood === 'neutral'
+                      ? styles.neutral
+                      : styles.sad,
+                  ]}
+                >
+                  <Text style={styles.emojiText}>{moodEmojis[mood]}</Text>
+                </View>
+                <Text style={styles.moodText}>
+                  {mood.charAt(0).toUpperCase() + mood.slice(1)}
+                </Text>
+                <View style={styles.flexGrow} />
+              </TouchableOpacity>
+            ))}
+          </View>
         </View>
-      </View>
-
-      <View style={styles.checkoutCard}>
-        <TouchableOpacity
-          style={[styles.checkoutButton, checkoutLoading && styles.buttonDisabled]}
-          onPress={handleEarlyCheckout}
-          disabled={checkoutLoading}
-        >
-          {checkoutLoading ? (
-            <ActivityIndicator size="small" color="#8B7ED8" style={{ marginRight: 10 }} />
-          ) : (
-            <Text style={styles.homeIcon}>🏠</Text>
-          )}
-          <Text style={styles.checkoutText}>
-            {checkoutLoading ? 'Loading...' : 'Checkout'}
-          </Text>
-        </TouchableOpacity>
+        {/* FAB with checkout option */}
+        <View style={fabContainerStyle}>
+          <FloatingActionButton
+            mainColor="#8B7ED8"
+            actionColor="#FFD93D"
+            labelColor="#4A4A6A"
+            labelBgColor="#FFFBEA"
+            backdropColor="#667eea"
+            checkoutLoading={checkoutLoading}
+            onCheckout={handleEarlyCheckout}
+          />
+        </View>
       </View>
     </View>
   );
@@ -169,6 +168,14 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 20,
     justifyContent: 'center',
+  },
+  headerSpacer: {
+    height: 10,
+  },
+  contentWrapper: {
+    flex: 1,
+    justifyContent: 'center',
+    transform: [{ translateY: -50 }],
   },
   moodCard: {
     backgroundColor: 'rgba(255,255,255,0.25)',
@@ -225,31 +232,6 @@ const styles = StyleSheet.create({
   sad: {
     backgroundColor: '#FF8A9B',
   },
-  checkoutCard: {
-    backgroundColor: 'rgba(255,255,255,0.25)',
-    borderRadius: 20,
-    padding: 20,
-  },
-  checkoutButton: {
-    backgroundColor: 'rgba(255,255,255,0.95)',
-    borderRadius: 15,
-    padding: 18,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  buttonDisabled: {
-    opacity: 0.6,
-  },
-  homeIcon: {
-    fontSize: 24,
-    marginRight: 10,
-  },
-  checkoutText: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#4A4A6A',
-  },
   noInternetCard: {
     backgroundColor: '#fff',
     borderRadius: 20,
@@ -287,5 +269,11 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
 });
+const fabContainerStyle = {
+  position: 'absolute' as const,
+  bottom: -56,
+  right: -16,
+  zIndex: 100,
+};
 
 export default Emotion;
