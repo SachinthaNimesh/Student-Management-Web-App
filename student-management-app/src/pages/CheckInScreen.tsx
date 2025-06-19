@@ -4,7 +4,6 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useLocation } from '../api/locationService';
 import { postCheckIn } from '../api/attendanceService';
 import NetInfo from '@react-native-community/netinfo';
-import * as Updates from 'expo-updates';
 
 type Props = {
   navigation: NativeStackNavigationProp<any>;
