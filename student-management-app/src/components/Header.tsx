@@ -1,15 +1,22 @@
 import React from 'react';
 import { View, Text, Image, StyleSheet } from 'react-native';
 import { getStudentById } from '../api/studentService';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const Header: React.FC = () => {
   const [studentName, setStudentName] = React.useState<string>('');
 
   React.useEffect(() => {
-    const fetchStudentData = async () => {
+    const fetchStudentName = async () => {
       try {
+        // Try to get from AsyncStorage first
+        const cachedName = await AsyncStorage.getItem('student_first_name');
+        if (cachedName) {
+          setStudentName(cachedName);
+          return;
+        }
+        // If not found, fetch from API
         const student = await getStudentById();
-        // Handle if API returns an array or object
         let firstName = '';
         if (Array.isArray(student) && student.length > 0) {
           firstName = student[0]?.first_name ?? '';
@@ -17,12 +24,15 @@ const Header: React.FC = () => {
           firstName = student.first_name ?? '';
         }
         setStudentName(firstName);
+        if (firstName) {
+          await AsyncStorage.setItem('student_first_name', firstName);
+        }
       } catch (error) {
         console.error('Error fetching student data:', error);
       }
     };
 
-    fetchStudentData();
+    fetchStudentName();
   }, []);
 
   return (
