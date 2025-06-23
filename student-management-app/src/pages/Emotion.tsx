@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator, Linking } from 'react-native';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, Animated, Easing } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { postMood, MoodType } from '../api/moodService';
 import { postCheckOut } from '../api/attendanceService';
@@ -23,6 +23,60 @@ const Emotion: React.FC<Props> = ({ navigation }) => {
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const { latitude, longitude } = useLocation();
   const [showNoInternet, setShowNoInternet] = useState(false);
+  const [showThankYou, setShowThankYou] = useState<MoodType | null>(null);
+  const [animatingMood, setAnimatingMood] = useState<MoodType | null>(null);
+  const emojiAnim = useRef({
+    happy: new Animated.Value(0),
+    neutral: new Animated.Value(0),
+    sad: new Animated.Value(0),
+  }).current;
+
+  const handleMoodPress = async (emotion: MoodType) => {
+    setAnimatingMood(emotion);
+    // Animate text opacity out
+    setTimeout(() => {
+      Animated.sequence([
+        Animated.timing(emojiAnim[emotion], {
+          toValue: 1,
+          duration: 400,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+        Animated.timing(emojiAnim[emotion], {
+          toValue: 0,
+          duration: 400,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+      ]).start(async () => {
+        setAnimatingMood(null);
+        setActiveMood(emotion);
+        setLoading(true);
+        try {
+          await postMood(emotion, 'checkin');
+        } catch (error: any) {
+          if (
+            typeof error?.message === 'string' &&
+            (
+              error.message.toLowerCase().includes('network') ||
+              error.message.toLowerCase().includes('internet') ||
+              error.message.toLowerCase().includes('connection') ||
+              error.message.toLowerCase().includes('failed to fetch')
+            )
+          ) {
+            setShowNoInternet(true);
+          } else {
+            console.error('Error posting mood:', error);
+            alert(error instanceof Error ? error.message : 'An error occurred while saving your mood.');
+            setActiveMood(null);
+          }
+        } finally {
+          setLoading(false);
+          setActiveMood(null);
+        }
+      });
+    }, 150); // short delay to allow text to fade out before emoji slides
+  };
 
   useEffect(() => {
     if (!showNoInternet) return;
@@ -35,35 +89,6 @@ const Emotion: React.FC<Props> = ({ navigation }) => {
     });
     return () => unsubscribe();
   }, [showNoInternet]);
-
-  const handleMoodPress = async (emotion: MoodType) => {
-    try {
-      setLoading(true);
-      setActiveMood(emotion);
-      await postMood(emotion, 'checkin');
-      setTimeout(() => {
-        setActiveMood(null);
-      }, 1000);
-    } catch (error: any) {
-      if (
-        typeof error?.message === 'string' &&
-        (
-          error.message.toLowerCase().includes('network') ||
-          error.message.toLowerCase().includes('internet') ||
-          error.message.toLowerCase().includes('connection') ||
-          error.message.toLowerCase().includes('failed to fetch')
-        )
-      ) {
-        setShowNoInternet(true);
-      } else {
-        console.error('Error posting mood:', error);
-        alert(error instanceof Error ? error.message : 'An error occurred while saving your mood.');
-        setActiveMood(null);
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
 
   // --- Checkout flow extracted for FAB ---
   const handleEarlyCheckout = useCallback(async () => {
@@ -120,31 +145,51 @@ const Emotion: React.FC<Props> = ({ navigation }) => {
         <View style={styles.moodCard}>
           <Text style={styles.title}>How are you?</Text>
           <View style={styles.moodButtons}>
-            {(['happy', 'neutral', 'sad'] as const).map((mood) => (
-              <TouchableOpacity
-                key={mood}
-                style={[styles.moodButton]}
-                onPress={() => handleMoodPress(mood)}
-                disabled={loading || activeMood !== null}
-              >
-                <View
-                  style={[
-                    styles.moodEmoji,
-                    mood === 'happy'
-                      ? styles.happy
-                      : mood === 'neutral'
-                      ? styles.neutral
-                      : styles.sad,
-                  ]}
+            {(['happy', 'neutral', 'sad'] as const).map((mood) => {
+              const isAnimating = animatingMood === mood;
+              return (
+                <TouchableOpacity
+                  key={mood}
+                  style={[styles.moodButton]}
+                  onPress={() => handleMoodPress(mood)}
+                  disabled={loading || activeMood !== null || isAnimating}
+                  activeOpacity={0.8}
                 >
-                  <Text style={styles.emojiText}>{moodEmojis[mood]}</Text>
-                </View>
-                <Text style={styles.moodText}>
-                  {mood.charAt(0).toUpperCase() + mood.slice(1)}
-                </Text>
-                <View style={styles.flexGrow} />
-              </TouchableOpacity>
-            ))}
+                  <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1, minWidth: 120, minHeight: 64 }}>
+                    <Animated.View
+                      style={[
+                        styles.moodEmoji,
+                        mood === 'happy'
+                          ? styles.happy
+                          : mood === 'neutral'
+                          ? styles.neutral
+                          : styles.sad,
+                        isAnimating && {
+                          transform: [
+                            {
+                              translateX: emojiAnim[mood].interpolate({
+                                inputRange: [0, 1],
+                                outputRange: [0, 120], // slide right then back
+                              }),
+                            },
+                          ],
+                        },
+                      ]}
+                    >
+                      <Text style={styles.emojiText}>{moodEmojis[mood]}</Text>
+                    </Animated.View>
+                    {!isAnimating && (
+                      <>
+                        <Text style={styles.moodText}>
+                          {mood.charAt(0).toUpperCase() + mood.slice(1)}
+                        </Text>
+                        <View style={styles.flexGrow} />
+                      </>
+                    )}
+                  </View>
+                </TouchableOpacity>
+              );
+            })}
           </View>
         </View>
         {/* FAB with checkout option */}
@@ -190,28 +235,44 @@ const styles = StyleSheet.create({
     transform: [{ translateY: -50 }],
   },
   moodCard: {
-    backgroundColor: 'rgba(255,255,255,0.25)',
+    backgroundColor: 'rgba(255, 255, 255, 0.25)',
     borderRadius: 20,
     padding: 30,
     marginBottom: 20,
   },
   title: {
-    fontSize: 24,
+    fontSize: 32,
     fontWeight: '800',
     color: '#2D2D2D',
     marginBottom: 25,
     alignSelf: 'center',
   },
   moodButtons: {
-    gap: 15,
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 20,
+    marginTop: 10,
+    marginBottom: 24,
   },
   moodButton: {
-    backgroundColor: 'rgba(255,255,255,0.95)',
-    borderRadius: 15,
-    padding: 18,
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 10,
+    backgroundColor: '#f7fafc',
+    borderRadius: 24,
+    paddingVertical: 18,
+    paddingHorizontal: 22,
+    marginBottom: 0,
+    marginHorizontal: 0,
+    minWidth: 120,
+    minHeight: 64,
+    shadowColor: '#22543d',
+    shadowOpacity: 0.10,
+    shadowOffset: { width: 0, height: 6 },
+    shadowRadius: 12,
+    elevation: 3,
+    borderWidth: 2,
+    borderColor: '#e2e8f0',
   },
   flexGrow: {
     flex: 1,
@@ -221,29 +282,51 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(139, 126, 216, 0.6)',
   },
   moodEmoji: {
-    width: 35,
-    height: 35,
-    borderRadius: 17.5,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 15,
+    marginRight: 18,
+    backgroundColor: '#fff',
+    shadowColor: '#b7e4c7',
+    shadowOpacity: 0.10,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 6,
+    elevation: 2,
+    overflow: 'hidden',
   },
   emojiText: {
-    fontSize: 20,
+    fontSize: 44,
+    textAlign: 'center',
+    color: '#22543d',
+    width: 60,
+    height: 60,
+    textAlignVertical: 'center',
+    lineHeight: 60,
+    includeFontPadding: false,
   },
   moodText: {
-    fontSize: 20,
+    fontSize: 26,
     fontWeight: '600',
-    color: '#4A4A6A',
+    color: '#22543d',
+    letterSpacing: 0.2,
+    opacity: 0.92,
   },
   happy: {
-    backgroundColor: '#FFD93D',
+    backgroundColor: '#f0fff4',
+    borderColor: '#68d391',
+    borderWidth: 0,
   },
   neutral: {
-    backgroundColor: '#A8E6CF',
+    backgroundColor: '#fffaf0',
+    borderColor: '#fbb6ce',
+    borderWidth: 0,
   },
   sad: {
-    backgroundColor: '#FF8A9B',
+    backgroundColor: '#ebf8ff',
+    borderColor: '#90cdf4',
+    borderWidth: 0,
   },
   noInternetCard: {
     backgroundColor: '#fff',
