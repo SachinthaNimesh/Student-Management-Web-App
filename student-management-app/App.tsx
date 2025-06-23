@@ -64,42 +64,48 @@ export default function App() {
       >
         <Stack.Screen name="Welcome" component={Welcome} />
         <Stack.Screen name="OTP" component={OTP} />
-        <Stack.Screen
-          name="CheckIn"
-          component={(props: ScreenProps) => (
+        <Stack.Screen name="CheckIn">
+          {(props: ScreenProps) => (
             <Layout>
               <CheckInScreen {...props} />
             </Layout>
           )}
-        />
-        {["WelcomeGreeting", "Emotions", "CheckOut", "Feedback", "CheckOutGreeting"].map(
-          (name: string) => (
-            <Stack.Screen
-              key={name}
-              name={name}
-              component={(props: ScreenProps) => (
-                <Layout>
-                  {(() => {
-                    switch (name) {
-                      case "WelcomeGreeting":
-                        return <WelcomeGreeting {...props} />;
-                      case "Emotions":
-                        return <Emotion {...props} />;
-                      case "CheckOut":
-                        return <CheckOutScreen {...props} />;
-                      case "Feedback":
-                        return <Feedback {...props} />;
-                      case "CheckOutGreeting":
-                        return <CheckOutGreeting {...props} />;
-                      default:
-                        return null;
-                    }
-                  })()}
-                </Layout>
-              )}
-            />
-          )
-        )}
+        </Stack.Screen>
+        <Stack.Screen name="WelcomeGreeting">
+          {(props: ScreenProps) => (
+            <Layout>
+              <WelcomeGreeting {...props} />
+            </Layout>
+          )}
+        </Stack.Screen>
+        <Stack.Screen name="Emotions">
+          {(props: ScreenProps) => (
+            <Layout>
+              <Emotion {...props} />
+            </Layout>
+          )}
+        </Stack.Screen>
+        <Stack.Screen name="CheckOut">
+          {(props: ScreenProps) => (
+            <Layout>
+              <CheckOutScreen {...props} />
+            </Layout>
+          )}
+        </Stack.Screen>
+        <Stack.Screen name="Feedback">
+          {(props: ScreenProps) => (
+            <Layout>
+              <Feedback {...props} />
+            </Layout>
+          )}
+        </Stack.Screen>
+        <Stack.Screen name="CheckOutGreeting">
+          {(props: ScreenProps) => (
+            <Layout>
+              <CheckOutGreeting {...props} />
+            </Layout>
+          )}
+        </Stack.Screen>
       </Stack.Navigator>
     </NavigationContainer>
   );
