@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator, Linking } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { postMood, MoodType } from '../api/moodService';
 import { postCheckOut } from '../api/attendanceService';
@@ -98,6 +98,7 @@ const Emotion: React.FC<Props> = ({ navigation }) => {
     }
   }, [latitude, longitude, navigation]);
 
+
   if (showNoInternet) {
     return (
       <View style={[StyleSheet.absoluteFill, styles.container, { backgroundColor: '#667eea', zIndex: 999, justifyContent: 'center', alignItems: 'center', padding: 0 }]}>
@@ -145,6 +146,7 @@ const Emotion: React.FC<Props> = ({ navigation }) => {
               </TouchableOpacity>
             ))}
           </View>
+          
         </View>
         {/* FAB with checkout option */}
         <View style={fabContainerStyle}>
@@ -156,6 +158,7 @@ const Emotion: React.FC<Props> = ({ navigation }) => {
             backdropColor="#667eea"
             checkoutLoading={checkoutLoading}
             onCheckout={handleEarlyCheckout}
+            navigation={navigation}
           />
         </View>
       </View>
@@ -267,6 +270,18 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#aaa',
     textAlign: 'center',
+  },
+  callButton: {
+    marginTop: 18,
+    backgroundColor: '#4A90E2',
+    borderRadius: 12,
+    paddingVertical: 12,
+    alignItems: 'center',
+  },
+  callButtonText: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: 'bold',
   },
 });
 const fabContainerStyle = {

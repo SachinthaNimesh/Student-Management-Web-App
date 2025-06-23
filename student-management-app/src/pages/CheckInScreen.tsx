@@ -4,7 +4,6 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useLocation } from '../api/locationService';
 import { postCheckIn } from '../api/attendanceService';
 import NetInfo from '@react-native-community/netinfo';
-import FloatingActionButton from '../components/FAB';
 
 type Props = {
   navigation: NativeStackNavigationProp<any>;
@@ -137,6 +136,7 @@ const CheckInScreen: React.FC<Props> = ({ navigation }) => {
   if (showWelcome) {
     return (
       <View style={[StyleSheet.absoluteFill, styles.container, { backgroundColor: '#667eea', zIndex: 999 }]}>
+       
         <Text style={styles.welcomeText}>Welcome!</Text>
         <View style={{ marginTop: 30 }} />
         <View style={{
@@ -175,7 +175,7 @@ const CheckInScreen: React.FC<Props> = ({ navigation }) => {
           disabled={loading}
         >
           <Text style={styles.buttonText}>
-            {loading ? 'Loading...' : 'Check In'}
+            {loading ? 'Loading...' : 'In'}
           </Text>
         </TouchableOpacity>
       </View>
@@ -241,8 +241,9 @@ const styles = StyleSheet.create({
     width: '100%',
     padding: 18,
     borderRadius: 20,
-    backgroundColor: '#ff6b6b',
+    backgroundColor: '#27ae60', 
     alignItems: 'center',
+    alignSelf: 'center',
   },
   buttonDisabled: {
     opacity: 0.6,

@@ -8,6 +8,7 @@ import {
   Dimensions,
   StatusBar,
   ActivityIndicator,
+  Linking,
 } from 'react-native';
 
 const { width, height } = Dimensions.get('window');
@@ -101,7 +102,7 @@ const ActionButton: React.FC<ActionButtonProps & {
   );
 };
 
-const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({
+const FloatingActionButton: React.FC<FloatingActionButtonProps & { navigation?: any }> = ({
   mainColor = '#8B7ED8',
   actionColor = '#3B82F6',
   labelColor = '#FFFFFF',
@@ -109,6 +110,7 @@ const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({
   backdropColor = '#000000',
   checkoutLoading = false,
   onCheckout,
+  navigation,
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const animatedValue = useRef(new Animated.Value(0)).current;
@@ -143,12 +145,18 @@ const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({
   const handleAction = (action: string) => {
     console.log(`${action} clicked`);
     setIsExpanded(false);
-    // Add your action logic here
     if (action === 'Message') {
       // Open chat/message functionality
     } else if (action === 'Call') {
-      // Open call functionality
+      Linking.openURL('tel:0769685670');
     }
+  };
+
+  const handleUndoCheckIn = () => {
+    if (navigation && typeof navigation.replace === 'function') {
+      navigation.replace('CheckIn');
+    }
+    setIsExpanded(false);
   };
 
   const rotation = rotationValue.interpolate({
@@ -185,7 +193,7 @@ const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({
             <Text style={{ fontSize: size, color }}>↩️</Text>
           )}
           label="Undo Checkin"
-          onPress={() => handleAction('Message')}
+          onPress={handleUndoCheckIn}
           delay={100}
           isExpanded={isExpanded}
           animatedValue={animatedValue}
