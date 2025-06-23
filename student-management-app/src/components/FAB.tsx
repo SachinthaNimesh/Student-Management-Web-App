@@ -148,7 +148,7 @@ const FloatingActionButton: React.FC<FloatingActionButtonProps & { navigation?: 
     if (action === 'Message') {
       // Open chat/message functionality
     } else if (action === 'Call') {
-      Linking.openURL('tel:0769685670');
+      Linking.openURL('tel:0776117145');
     }
   };
 
@@ -161,7 +161,7 @@ const FloatingActionButton: React.FC<FloatingActionButtonProps & { navigation?: 
 
   const rotation = rotationValue.interpolate({
     inputRange: [0, 1],
-    outputRange: ['0deg', '45deg'],
+    outputRange: ['0deg', '90deg'],
   });
 
   return (

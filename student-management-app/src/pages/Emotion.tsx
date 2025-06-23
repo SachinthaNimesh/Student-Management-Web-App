@@ -118,7 +118,7 @@ const Emotion: React.FC<Props> = ({ navigation }) => {
       <View style={styles.headerSpacer} />
       <View style={styles.contentWrapper}>
         <View style={styles.moodCard}>
-          <Text style={styles.title}>How are you feeling Now?</Text>
+          <Text style={styles.title}>How are you?</Text>
           <View style={styles.moodButtons}>
             {(['happy', 'neutral', 'sad'] as const).map((mood) => (
               <TouchableOpacity
@@ -146,7 +146,6 @@ const Emotion: React.FC<Props> = ({ navigation }) => {
               </TouchableOpacity>
             ))}
           </View>
-          
         </View>
         {/* FAB with checkout option */}
         <View style={fabContainerStyle}>
@@ -160,6 +159,16 @@ const Emotion: React.FC<Props> = ({ navigation }) => {
             onCheckout={handleEarlyCheckout}
             navigation={navigation}
           />
+        </View>
+        {/* Exit button in left bottom corner */}
+        <View style={exitButtonContainerStyle}>
+          <TouchableOpacity
+            style={styles.exitButton}
+            onPress={() => navigation.replace('CheckOut')}
+            activeOpacity={0.8}
+          >
+            <Text style={{fontSize: 28}} role="img" aria-label="exit">🚪</Text>
+          </TouchableOpacity>
         </View>
       </View>
     </View>
@@ -187,10 +196,11 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   title: {
-    fontSize: 22,
-    fontWeight: '600',
+    fontSize: 24,
+    fontWeight: '800',
     color: '#2D2D2D',
     marginBottom: 25,
+    alignSelf: 'center',
   },
   moodButtons: {
     gap: 15,
@@ -283,11 +293,37 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
   },
+  exitButton: {
+    width: 64,
+    height: 64,
+    borderRadius: 28,
+    backgroundColor: '#FF8A9B',
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 6,
+    shadowColor: '#000',
+    shadowOpacity: 0.15,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 4,
+  },
+  exitButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
 });
 const fabContainerStyle = {
   position: 'absolute' as const,
   bottom: -56,
   right: -16,
+  zIndex: 100,
+};
+
+// Exit button container for left bottom corner
+const exitButtonContainerStyle = {
+  position: 'absolute' as const,
+  bottom: -26,
+  left: 16,
   zIndex: 100,
 };
 

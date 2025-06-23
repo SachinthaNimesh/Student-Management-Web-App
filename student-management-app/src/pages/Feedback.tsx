@@ -78,7 +78,7 @@ const Feedback: React.FC<Props> = ({ navigation }) => {
   return (
     <View style={styles.container}>
       <View style={styles.moodCard}>
-        <Text style={styles.title}>How was your day at work?</Text>
+        <Text style={styles.title}>Today?</Text>
         <View style={styles.moodButtons}>
           {(['happy', 'neutral', 'sad'] as const).map((mood) => (
             <TouchableOpacity
@@ -125,10 +125,11 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   title: {
-    fontSize: 22,
-    fontWeight: '600',
+    fontSize: 24,
+    fontWeight: '800',
     color: '#2D2D2D',
     marginBottom: 25,
+    alignSelf: 'center',
   },
   moodButtons: {
     gap: 15,
