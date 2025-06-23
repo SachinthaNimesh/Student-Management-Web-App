@@ -39,8 +39,7 @@ const WelcomeGreeting: React.FC<Props> = ({ navigation }) => {
         uri: [
           'https://lottie.host/8f2c312f-9100-4ff7-be99-99a8bd90a894/TbP8d42cek.lottie',
           'https://lottie.host/d70c9115-b567-43c0-b39d-07383205b216/8CBoIhDskY.lottie',
-          'https://lottie.host/664596c3-11a3-458a-831b-5ae7615e4bc7/LgsMRSFI5p.lottie',
-          'https://lottie.host/e65fc1fe-3f05-458a-a191-ed18cf9b9e5d/Wi8X4nh4pZ.lottie'
+          'https://lottie.host/e65fc1fe-3f05-458a-a191-ed18cf9b9e5d/Wi8X4nh4pZ.lottie',
         ][Math.floor(Math.random() * 4)]
           }}
           autoPlay
