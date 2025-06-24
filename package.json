@@ -1,0 +1,7 @@
+{
+  "dependencies": {
+    "@react-native-community/blur": "^4.4.1",
+    "lucide-react": "^0.518.0",
+    "lucide-react-native": "^0.518.0"
+  }
+}

@@ -18,7 +18,7 @@ export const getStudentById = async () => {
       method: 'GET',
       headers: {
         accept: 'application/json',
-        'Student-ID': student_id,
+        'student-id': student_id,
         'api-key': String(process.env.EXPO_PUBLIC_API_KEY ?? ''),
       },
     });
