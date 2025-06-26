@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "Worky",
-    "slug": "student-management-app",
+    "slug": "worky",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -28,12 +28,13 @@
     },
     "extra": {
       "eas": {
-        "projectId": "cc9945ca-79a7-4860-b0e6-7f3638840972"
+        "projectId": "a704672c-6fca-4644-b5d2-88c9dcf0662e"
       }
     },
-    "runtimeVersion":"1.0.0",
+    "runtimeVersion": "1.0.0",
     "updates": {
       "url": "https://u.expo.dev/cc9945ca-79a7-4860-b0e6-7f3638840972"
-    }
+    },
+    "owner": "sjdsf"
   }
 }

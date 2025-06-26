@@ -1,1 +1,71 @@
+# Node modules
 node_modules
+
+# React Native build directories
+/android
+/ios
+
+# Metro bundler cache
+.expo
+.expo-shared
+.expo/*
+.expo-shared/*
+/.expo
+/.expo-shared
+
+# Build output
+/build
+/dist
+
+# Misc
+.env
+.env.*
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+yarn.lock
+
+# VSCode
+.vscode/
+
+# Mac system files
+.DS_Store
+
+# Watchman
+.watchmanconfig
+
+# Buck build system
+.buckconfig
+.buckd/
+buck-out/
+\.buckversion
+
+# Fastlane
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots
+fastlane/test_output
+
+# CocoaPods
+ios/Pods/
+ios/Podfile.lock
+
+# Android/Gradle
+android/.gradle/
+android/app/build/
+android/build/
+android/local.properties
+
+# Miscellaneous
+*.keystore
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+*.orig.*
+*.swp
+*.swo
+*.iml
+.idea/
