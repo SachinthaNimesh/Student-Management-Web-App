@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Animated, Easing } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Animated, BackHandler, ActivityIndicator } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { postMood, MoodType } from '../api/moodService';
 import { postCheckOut } from '../api/attendanceService';
@@ -24,58 +24,58 @@ const Emotion: React.FC<Props> = ({ navigation }) => {
   const { latitude, longitude } = useLocation();
   const [showNoInternet, setShowNoInternet] = useState(false);
   const [showThankYou, setShowThankYou] = useState<MoodType | null>(null);
-  const [animatingMood, setAnimatingMood] = useState<MoodType | null>(null);
-  const emojiAnim = useRef({
-    happy: new Animated.Value(0),
-    neutral: new Animated.Value(0),
-    sad: new Animated.Value(0),
-  }).current;
+
+  // Add refs for button scale animations
+  const buttonScales = {
+    happy: useRef(new Animated.Value(1)).current,
+    neutral: useRef(new Animated.Value(1)).current,
+    sad: useRef(new Animated.Value(1)).current,
+  };
+
+  const handleMoodPressIn = (mood: MoodType) => {
+    Animated.spring(buttonScales[mood], {
+      toValue: 0.92,
+      useNativeDriver: true,
+      speed: 50,
+      bounciness: 10,
+    }).start();
+  };
+
+  const handleMoodPressOut = (mood: MoodType) => {
+    Animated.spring(buttonScales[mood], {
+      toValue: 1,
+      useNativeDriver: true,
+      speed: 50,
+      bounciness: 10,
+    }).start();
+  };
 
   const handleMoodPress = async (emotion: MoodType) => {
-    setAnimatingMood(emotion);
-    // Animate text opacity out
-    setTimeout(() => {
-      Animated.sequence([
-        Animated.timing(emojiAnim[emotion], {
-          toValue: 1,
-          duration: 400,
-          easing: Easing.inOut(Easing.ease),
-          useNativeDriver: true,
-        }),
-        Animated.timing(emojiAnim[emotion], {
-          toValue: 0,
-          duration: 400,
-          easing: Easing.inOut(Easing.ease),
-          useNativeDriver: true,
-        }),
-      ]).start(async () => {
-        setAnimatingMood(null);
-        setActiveMood(emotion);
-        setLoading(true);
-        try {
-          await postMood(emotion, 'checkin');
-        } catch (error: any) {
-          if (
-            typeof error?.message === 'string' &&
-            (
-              error.message.toLowerCase().includes('network') ||
-              error.message.toLowerCase().includes('internet') ||
-              error.message.toLowerCase().includes('connection') ||
-              error.message.toLowerCase().includes('failed to fetch')
-            )
-          ) {
-            setShowNoInternet(true);
-          } else {
-            console.error('Error posting mood:', error);
-            alert(error instanceof Error ? error.message : 'An error occurred while saving your mood.');
-            setActiveMood(null);
-          }
-        } finally {
-          setLoading(false);
-          setActiveMood(null);
-        }
-      });
-    }, 150); // short delay to allow text to fade out before emoji slides
+    setActiveMood(emotion);
+    setLoading(true);
+    try {
+      await postMood(emotion, 'checkin');
+      navigation.replace('PostEmotion');
+    } catch (error: any) {
+      if (
+        typeof error?.message === 'string' &&
+        (
+          error.message.toLowerCase().includes('network') ||
+          error.message.toLowerCase().includes('internet') ||
+          error.message.toLowerCase().includes('connection') ||
+          error.message.toLowerCase().includes('failed to fetch')
+        )
+      ) {
+        setShowNoInternet(true);
+      } else {
+        console.error('Error posting mood:', error);
+        alert(error instanceof Error ? error.message : 'An error occurred while saving your mood.');
+        setActiveMood(null);
+      }
+    } finally {
+      setLoading(false);
+      setActiveMood(null);
+    }
   };
 
   useEffect(() => {
@@ -145,18 +145,24 @@ const Emotion: React.FC<Props> = ({ navigation }) => {
         <View style={styles.moodCard}>
           <Text style={styles.title}>How are you?</Text>
           <View style={styles.moodButtons}>
-            {(['happy', 'neutral', 'sad'] as const).map((mood) => {
-              const isAnimating = animatingMood === mood;
-              return (
+            {(['happy', 'neutral', 'sad'] as const).map((mood) => (
+              <Animated.View
+                key={mood}
+                style={{ transform: [{ scale: buttonScales[mood] }], width: '100%' }}
+              >
                 <TouchableOpacity
-                  key={mood}
-                  style={[styles.moodButton]}
+                  style={[
+                    styles.moodButton,
+                    activeMood === mood && loading ? styles.selectedMood : null,
+                  ]}
+                  onPressIn={() => handleMoodPressIn(mood)}
+                  onPressOut={() => handleMoodPressOut(mood)}
                   onPress={() => handleMoodPress(mood)}
-                  disabled={loading || activeMood !== null || isAnimating}
+                  disabled={loading || activeMood !== null}
                   activeOpacity={0.8}
                 >
                   <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1, minWidth: 120, minHeight: 64 }}>
-                    <Animated.View
+                    <View
                       style={[
                         styles.moodEmoji,
                         mood === 'happy'
@@ -164,32 +170,21 @@ const Emotion: React.FC<Props> = ({ navigation }) => {
                           : mood === 'neutral'
                           ? styles.neutral
                           : styles.sad,
-                        isAnimating && {
-                          transform: [
-                            {
-                              translateX: emojiAnim[mood].interpolate({
-                                inputRange: [0, 1],
-                                outputRange: [0, 120], // slide right then back
-                              }),
-                            },
-                          ],
-                        },
                       ]}
                     >
                       <Text style={styles.emojiText}>{moodEmojis[mood]}</Text>
-                    </Animated.View>
-                    {!isAnimating && (
-                      <>
-                        <Text style={styles.moodText}>
-                          {mood.charAt(0).toUpperCase() + mood.slice(1)}
-                        </Text>
-                        <View style={styles.flexGrow} />
-                      </>
+                    </View>
+                    <Text style={styles.moodText}>
+                      {mood.charAt(0).toUpperCase() + mood.slice(1)}
+                    </Text>
+                    <View style={styles.flexGrow} />
+                    {activeMood === mood && loading && (
+                      <ActivityIndicator size="small" color="#8B7ED8" style={{ marginLeft: 10 }} />
                     )}
                   </View>
                 </TouchableOpacity>
-              );
-            })}
+              </Animated.View>
+            ))}
           </View>
         </View>
         {/* FAB with checkout option */}
@@ -204,6 +199,11 @@ const Emotion: React.FC<Props> = ({ navigation }) => {
             onCheckout={handleEarlyCheckout}
             navigation={navigation}
           />
+          {checkoutLoading && (
+            <View style={styles.fabLoadingOverlay}>
+              <ActivityIndicator size="large" color="#8B7ED8" />
+            </View>
+          )}
         </View>
         {/* Exit button in left bottom corner */}
         <View style={exitButtonContainerStyle}>
@@ -211,6 +211,7 @@ const Emotion: React.FC<Props> = ({ navigation }) => {
             style={styles.exitButton}
             onPress={() => navigation.replace('CheckOut')}
             activeOpacity={0.8}
+            disabled={loading || checkoutLoading}
           >
             <Text style={{fontSize: 28}} role="img" aria-label="exit">🚪</Text>
           </TouchableOpacity>
@@ -393,6 +394,14 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: 'bold',
     fontSize: 16,
+  },
+  fabLoadingOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255,255,255,0.3)',
+    zIndex: 200,
+    borderRadius: 32,
   },
 });
 const fabContainerStyle = {

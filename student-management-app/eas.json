@@ -27,7 +27,7 @@
       }
     },
     "apkbuild": {
-      "channel":"apkbuild",
+      "channel": "apkbuild",
       "android": {
         "buildType": "apk"
       }

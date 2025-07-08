@@ -12,6 +12,7 @@ import Feedback from "./src/pages/Feedback";
 import CheckOutGreeting from "./src/pages/CheckOutGreeting";
 import React, { useEffect, useState, useRef } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import PostEmotion from "./src/pages/PostEmotion";
 
 const Stack = createNativeStackNavigator();
 
@@ -34,7 +35,6 @@ export default function App() {
   }, []);
 
   if (!initialRoute) {
-    // Optionally show a splash/loading screen here
     return null;
   }
 
@@ -105,7 +105,9 @@ export default function App() {
               <CheckOutGreeting {...props} />
             </Layout>
           )}
+      
         </Stack.Screen>
+        <Stack.Screen name="PostEmotion" component={PostEmotion} />
       </Stack.Navigator>
     </NavigationContainer>
   );

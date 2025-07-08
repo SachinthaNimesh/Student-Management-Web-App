@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, Animated, ActivityIndicator } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { postMood, MoodType } from '../api/moodService';
 import NetInfo from '@react-native-community/netinfo';
@@ -19,6 +19,13 @@ const Feedback: React.FC<Props> = ({ navigation }) => {
   const [activeMood, setActiveMood] = useState<MoodType | null>(null);
   const [showNoInternet, setShowNoInternet] = useState(false);
 
+  // Add refs for button scale animations
+  const buttonScales = {
+    happy: useRef(new Animated.Value(1)).current,
+    neutral: useRef(new Animated.Value(1)).current,
+    sad: useRef(new Animated.Value(1)).current,
+  };
+
   useEffect(() => {
     if (!showNoInternet) return;
     const unsubscribe = NetInfo.addEventListener(state => {
@@ -31,14 +38,32 @@ const Feedback: React.FC<Props> = ({ navigation }) => {
     return () => unsubscribe();
   }, [showNoInternet]);
 
+  const handleMoodPressIn = (mood: MoodType) => {
+    Animated.spring(buttonScales[mood], {
+      toValue: 0.92,
+      useNativeDriver: true,
+      speed: 50,
+      bounciness: 10,
+    }).start();
+  };
+
+  const handleMoodPressOut = (mood: MoodType) => {
+    Animated.spring(buttonScales[mood], {
+      toValue: 1,
+      useNativeDriver: true,
+      speed: 50,
+      bounciness: 10,
+    }).start();
+  };
+
   const handleMoodPress = async (emotion: MoodType) => {
+    setActiveMood(emotion);
+    setLoading(true);
     try {
-      setLoading(true);
-      setActiveMood(emotion);
       await postMood(emotion, 'checkout');
       setTimeout(() => {
         setActiveMood(null);
-        navigation.replace('CheckOutGreeting');
+        navigation.navigate('CheckOutGreeting');
       }, 1000);
     } catch (error: any) {
       if (
@@ -81,30 +106,42 @@ const Feedback: React.FC<Props> = ({ navigation }) => {
         <Text style={styles.title}>Today?</Text>
         <View style={styles.moodButtons}>
           {(['happy', 'neutral', 'sad'] as const).map((mood) => (
-            <TouchableOpacity
+            <Animated.View
               key={mood}
-              style={styles.moodButton}
-              onPress={() => handleMoodPress(mood)}
-              disabled={loading || activeMood !== null}
+              style={{ transform: [{ scale: buttonScales[mood] }], width: '100%' }}
             >
-              <View
+              <TouchableOpacity
                 style={[
-                  styles.moodEmoji,
-                  mood === 'happy'
-                    ? styles.happy
-                    : mood === 'neutral'
-                    ? styles.neutral
-                    : styles.sad,
+                  styles.moodButton,
+                  activeMood === mood && loading ? styles.selectedMood : null,
                 ]}
+                onPressIn={() => handleMoodPressIn(mood)}
+                onPressOut={() => handleMoodPressOut(mood)}
+                onPress={() => handleMoodPress(mood)}
+                disabled={loading || activeMood !== null}
+                activeOpacity={0.8}
               >
-                <Text style={styles.emojiText}>{moodEmojis[mood]}</Text>
-              </View>
-              <Text style={styles.moodText}>
-                {mood.charAt(0).toUpperCase() + mood.slice(1)}
-              </Text>
-              <View style={styles.flexGrow} />
-              {/* Loader can be removed if you want to match the other screens */}
-            </TouchableOpacity>
+                <View
+                  style={[
+                    styles.moodEmoji,
+                    mood === 'happy'
+                      ? styles.happy
+                      : mood === 'neutral'
+                      ? styles.neutral
+                      : styles.sad,
+                  ]}
+                >
+                  <Text style={styles.emojiText}>{moodEmojis[mood]}</Text>
+                </View>
+                <Text style={styles.moodText}>
+                  {mood.charAt(0).toUpperCase() + mood.slice(1)}
+                </Text>
+                <View style={styles.flexGrow} />
+                {activeMood === mood && loading && (
+                  <ActivityIndicator size="small" color="#8B7ED8" style={{ marginLeft: 10 }} />
+                )}
+              </TouchableOpacity>
+            </Animated.View>
           ))}
         </View>
       </View>
@@ -243,6 +280,10 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#aaa',
     textAlign: 'center',
+  },
+  selectedMood: {
+    backgroundColor: 'rgba(232, 230, 255, 1)',
+    borderColor: 'rgba(139, 126, 216, 0.6)',
   },
 });
 
