@@ -105,9 +105,14 @@ export default function App() {
               <CheckOutGreeting {...props} />
             </Layout>
           )}
-      
         </Stack.Screen>
-        <Stack.Screen name="PostEmotion" component={PostEmotion} />
+        <Stack.Screen name="PostEmotion">
+          {(props: ScreenProps) => (
+            <Layout>
+              <PostEmotion {...props} />
+            </Layout>
+          )}
+        </Stack.Screen>
       </Stack.Navigator>
     </NavigationContainer>
   );

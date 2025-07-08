@@ -1,16 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { View, Text, StyleSheet, BackHandler } from "react-native";
 import LottieView from "lottie-react-native";
-import { useNavigation } from "@react-navigation/native";
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
-type RootStackParamList = {
-  Emotions: undefined;
+type Props = {
+  navigation: any;
+  route: any;
 };
-
-const PostEmotion = () => {
+const PostEmotion = ({ navigation, route }: Props) => {
   const [thankYouText, setThankYouText] = useState("");
-  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+
   useEffect(() => {
     const message = "Mood Saved!";
     setThankYouText(message);
@@ -20,7 +18,7 @@ const PostEmotion = () => {
       setTimeout(() => {
         BackHandler.exitApp();
       }, 1);
-    }, 3000);
+    }, 3000); // 3 seconds for production
 
     return () => clearTimeout(timer);
   }, []);
@@ -50,7 +48,7 @@ const styles = StyleSheet.create({
     padding: 15,
   },
   card: {
-    backgroundColor: "rgba(255,255,255,0.6)",
+    backgroundColor: 'rgba(255, 255, 255, 0.6)',
     width: "100%",
     padding: 30,
     paddingVertical: 45,

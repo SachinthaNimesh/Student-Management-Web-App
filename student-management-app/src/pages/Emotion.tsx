@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Animated, BackHandler, ActivityIndicator } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Animated, ActivityIndicator } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { postMood, MoodType } from '../api/moodService';
 import { postCheckOut } from '../api/attendanceService';
 import { useLocation } from '../api/locationService';
 import NetInfo from '@react-native-community/netinfo';
 import FloatingActionButton from '../components/FAB';
+import { getStudentById } from '../api/studentService';
 
 type Props = {
   navigation: NativeStackNavigationProp<any>;
@@ -23,7 +24,9 @@ const Emotion: React.FC<Props> = ({ navigation }) => {
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const { latitude, longitude } = useLocation();
   const [showNoInternet, setShowNoInternet] = useState(false);
-  const [showThankYou, setShowThankYou] = useState<MoodType | null>(null);
+  const [checkOutTime, setCheckOutTime] = useState<string | null>(null);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const checkOutTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Add refs for button scale animations
   const buttonScales = {
@@ -53,6 +56,7 @@ const Emotion: React.FC<Props> = ({ navigation }) => {
   const handleMoodPress = async (emotion: MoodType) => {
     setActiveMood(emotion);
     setLoading(true);
+    setErrorMsg(null);
     try {
       await postMood(emotion, 'checkin');
       navigation.replace('PostEmotion');
@@ -68,8 +72,11 @@ const Emotion: React.FC<Props> = ({ navigation }) => {
       ) {
         setShowNoInternet(true);
       } else {
-        console.error('Error posting mood:', error);
-        alert(error instanceof Error ? error.message : 'An error occurred while saving your mood.');
+        setErrorMsg(
+          error instanceof Error
+            ? error.message
+            : 'Error saving mood.'
+        );
         setActiveMood(null);
       }
     } finally {
@@ -92,13 +99,15 @@ const Emotion: React.FC<Props> = ({ navigation }) => {
 
   // --- Checkout flow extracted for FAB ---
   const handleEarlyCheckout = useCallback(async () => {
+    setErrorMsg(null);
     try {
       setCheckoutLoading(true);
       setLoading(true);
       if (latitude === null || longitude === null) {
         setCheckoutLoading(false);
         setLoading(false);
-        return alert('Location data is not available. Please try again.');
+        setErrorMsg('Location data is not available. Please try again.');
+        return;
       }
       await postCheckOut(latitude, longitude);
       navigation.replace('Feedback');
@@ -114,8 +123,11 @@ const Emotion: React.FC<Props> = ({ navigation }) => {
       ) {
         setShowNoInternet(true);
       } else {
-        console.error('Error during early checkout:', error);
-        alert(error instanceof Error ? error.message : 'An error occurred during checkout. Please try again.');
+        setErrorMsg(
+          error instanceof Error
+            ? error.message
+            : 'Error! Please try again.'
+        );
       }
     } finally {
       setCheckoutLoading(false);
@@ -123,6 +135,45 @@ const Emotion: React.FC<Props> = ({ navigation }) => {
     }
   }, [latitude, longitude, navigation]);
 
+  // Fetch checkout time and set timer for auto-navigation
+  useEffect(() => {
+    let isMounted = true;
+    async function fetchAndSetTimer() {
+      try {
+        const student = await getStudentById();
+        if (!isMounted) return;
+        if (student?.check_out_time) {
+          setCheckOutTime(student.check_out_time);
+
+          // Only use time (HH:MM:SS) for today
+          const [hh, mm, ss] = student.check_out_time.split(':').map(Number);
+          const now = new Date();
+          const nowSeconds = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
+          const checkOutSeconds = hh * 3600 + mm * 60 + ss;
+          const thirtyMinBeforeSeconds = checkOutSeconds - 30 * 60;
+          const secondsUntil = thirtyMinBeforeSeconds - nowSeconds;
+
+          if (secondsUntil <= 0) {
+            // Already within 30 minutes, navigate immediately
+            navigation.replace('CheckOut');
+          } else {
+            // Set timer to navigate at the right time
+            if (checkOutTimerRef.current) clearTimeout(checkOutTimerRef.current);
+            checkOutTimerRef.current = setTimeout(() => {
+              navigation.replace('CheckOut');
+            }, secondsUntil * 1000);
+          }
+        }
+      } catch (e) {
+        // Silent fail 
+      }
+    }
+    fetchAndSetTimer();
+    return () => {
+      isMounted = false;
+      if (checkOutTimerRef.current) clearTimeout(checkOutTimerRef.current);
+    };
+  }, [navigation]);
 
   if (showNoInternet) {
     return (
@@ -140,6 +191,11 @@ const Emotion: React.FC<Props> = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
+      {errorMsg && (
+        <View style={styles.errorMsgContainer}>
+          <Text style={styles.errorMsgText}>{errorMsg}</Text>
+        </View>
+      )}
       <View style={styles.headerSpacer} />
       <View style={styles.contentWrapper}>
         <View style={styles.moodCard}>
@@ -160,6 +216,8 @@ const Emotion: React.FC<Props> = ({ navigation }) => {
                   onPress={() => handleMoodPress(mood)}
                   disabled={loading || activeMood !== null}
                   activeOpacity={0.8}
+                  accessibilityLabel={`Select mood: ${mood}`}
+                  accessibilityRole="button"
                 >
                   <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1, minWidth: 120, minHeight: 64 }}>
                     <View
@@ -205,17 +263,7 @@ const Emotion: React.FC<Props> = ({ navigation }) => {
             </View>
           )}
         </View>
-        {/* Exit button in left bottom corner */}
-        <View style={exitButtonContainerStyle}>
-          <TouchableOpacity
-            style={styles.exitButton}
-            onPress={() => navigation.replace('CheckOut')}
-            activeOpacity={0.8}
-            disabled={loading || checkoutLoading}
-          >
-            <Text style={{fontSize: 28}} role="img" aria-label="exit">🚪</Text>
-          </TouchableOpacity>
-        </View>
+        
       </View>
     </View>
   );
@@ -402,6 +450,19 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.3)',
     zIndex: 200,
     borderRadius: 32,
+  },
+  errorMsgContainer: {
+    backgroundColor: '#FFD2D2',
+    padding: 10,
+    borderRadius: 8,
+    marginBottom: 10,
+    alignSelf: 'center',
+    maxWidth: 320,
+  },
+  errorMsgText: {
+    color: '#B00020',
+    fontSize: 15,
+    textAlign: 'center',
   },
 });
 const fabContainerStyle = {

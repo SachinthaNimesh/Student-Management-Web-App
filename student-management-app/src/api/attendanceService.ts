@@ -1,6 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
-const BASE_URL = 'https://87e89eab-95e5-4c0f-8192-7ee0196e1581-dev.e1-us-east-azure.choreoapis.dev/employee-mgmt-system/server-docker/v1.0';
+import { BASE_URL } from '../../config/config';
 
 export const postCheckIn = async (latitude: number, longitude: number) => {
   try {

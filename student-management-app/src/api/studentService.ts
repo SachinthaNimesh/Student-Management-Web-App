@@ -1,39 +1,52 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
-
-const BASE_URL = 'https://87e89eab-95e5-4c0f-8192-7ee0196e1581-dev.e1-us-east-azure.choreoapis.dev/employee-mgmt-system/student-mgmt-server/v1.0';
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { BASE_URL } from "../../config/config";
 
 export const getStudentById = async () => {
   try {
-    let student_id = await AsyncStorage.getItem('student_id');
+    let student_id = await AsyncStorage.getItem("student_id");
     if (!student_id) {
-      throw new Error('Student ID not found');
+      throw new Error("Student ID not found");
     }
     student_id = student_id.trim();
-    console.log('Fetched student_id from AsyncStorage:', student_id);
+    console.log("Fetched student_id from AsyncStorage:", student_id);
 
     const url = `${BASE_URL}/get-student`;
-    console.log('Fetching student data from URL:', url);
+    console.log("Fetching student data from URL:", url);
 
     const response = await fetch(url, {
-      method: 'GET',
+      method: "GET",
       headers: {
-        accept: 'application/json',
-        'student-id': student_id,
-        'api-key': String(process.env.EXPO_PUBLIC_API_KEY ?? ''),
+        accept: "application/json",
+        "student-id": student_id,
+        "api-key": String(process.env.EXPO_PUBLIC_API_KEY ?? ""),
       },
     });
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('Failed to fetch student data:', response.status, errorText);
-      throw new Error('Failed to fetch student data');
+      console.error(
+        "Failed to fetch student data:",
+        response.status,
+        errorText
+      );
+      throw new Error("Failed to fetch student data");
     }
 
     const data = await response.json();
-    console.log('Student data received:', data);
+
+    // Get check_out_time from AsyncStorage
+    const storedCheckOutTime = await AsyncStorage.getItem("check_out_time");
+
+    // // If backend check_out_time is present and different, update AsyncStorage
+    if (data.check_out_time && data.check_out_time !== storedCheckOutTime) {
+      await AsyncStorage.setItem("check_out_time", data.check_out_time);
+    } else if (!data.check_out_time && storedCheckOutTime) {
+      // If backend check_out_time is missing, use the stored value
+      data.check_out_time = storedCheckOutTime;
+    }
     return data;
   } catch (error) {
-    console.error('Error fetching student:', error);
+    console.error("Error fetching student:", error);
     throw error;
   }
 };
