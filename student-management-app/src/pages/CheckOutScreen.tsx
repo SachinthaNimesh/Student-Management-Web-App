@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import React, { useState, useEffect, useRef } from "react";
+import { View, Text, TouchableOpacity, StyleSheet, Alert, ActivityIndicator } from "react-native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useLocation } from "../api/locationService";
 import { postCheckOut } from "../api/attendanceService";
@@ -14,6 +14,12 @@ const CheckOutScreen: React.FC<Props> = ({ navigation }) => {
   const [loading, setLoading] = useState(false);
   const [showNoInternet, setShowNoInternet] = useState(false);
   const { latitude, longitude } = useLocation();
+  const isMounted = useRef(true);
+
+  useEffect(() => {
+    isMounted.current = true;
+    return () => { isMounted.current = false; };
+  }, []);
 
   useEffect(() => {
     if (!showNoInternet) return;
@@ -26,17 +32,22 @@ const CheckOutScreen: React.FC<Props> = ({ navigation }) => {
   }, [showNoInternet]);
 
   const handleCheckOut = async () => {
+    if (loading) return; // Prevent multiple submissions
     try {
       setLoading(true);
       if (latitude == null || longitude == null) {
         setLoading(false);
-        return alert(
+        Alert.alert(
+          "Location Unavailable",
           "Location data is not available. Please enable location services and try again."
         );
+        return;
       }
 
       await postCheckOut(latitude, longitude);
-      navigation.replace("Feedback");
+      if (isMounted.current) {
+        navigation.replace("Feedback");
+      }
     } catch (error: any) {
       if (
         typeof error?.message === "string" &&
@@ -48,14 +59,15 @@ const CheckOutScreen: React.FC<Props> = ({ navigation }) => {
         setShowNoInternet(true);
       } else {
         console.error("An error occurred during check-out:", error);
-        alert(
+        Alert.alert(
+          "Check-out Error",
           error instanceof Error
             ? error.message
             : "An error occurred during check-out. Please try again."
         );
       }
     } finally {
-      setLoading(false);
+      if (isMounted.current) setLoading(false);
     }
   };
 
@@ -73,10 +85,12 @@ const CheckOutScreen: React.FC<Props> = ({ navigation }) => {
             padding: 0,
           },
         ]}
+        accessible={true}
+        accessibilityLabel="No Internet Connection"
       >
         <View />
         <View style={styles.noInternetCard}>
-          <Text style={styles.noInternetEmoji}>🛜</Text>
+          <Text style={styles.noInternetEmoji} accessibilityLabel="No Internet">🛜</Text>
           <Text style={styles.noInternetTitle}>No Internet Connection</Text>
           <Text style={styles.noInternetMsg}>
             Turn Mobile Data or Wifi On 🛜
@@ -88,11 +102,10 @@ const CheckOutScreen: React.FC<Props> = ({ navigation }) => {
   }
 
   return (
-    <View style={styles.container}>
+    <View style={styles.container} accessible={true} accessibilityLabel="Check Out Screen">
       <View style={styles.card}>
         {/* Lottie animation for home */}
         <View style={{ width: 120, height: 120, marginBottom: 20 }}>
-          {/* @ts-ignore */}
           <LottieView
             source={{
               uri: "https://lottie.host/e0fe36ea-db79-48fc-b40a-8c550970cc09/iKa9zRuPni.lottie",
@@ -107,9 +120,11 @@ const CheckOutScreen: React.FC<Props> = ({ navigation }) => {
           style={[styles.button, loading && styles.buttonDisabled]}
           onPress={handleCheckOut}
           disabled={loading}
+          accessibilityLabel="Check out"
+          accessibilityState={{ disabled: loading }}
         >
           {loading ? (
-            <View style={styles.spinner} />
+            <ActivityIndicator size="small" color="#fff" />
           ) : (
             <View style={styles.buttonContent}>
               <Text style={styles.buttonText}>Out</Text>
@@ -177,14 +192,6 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: "bold",
     textTransform: "uppercase",
-  },
-  spinner: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    borderWidth: 4,
-    borderColor: "rgba(255,255,255,0.3)",
-    borderTopColor: "white",
   },
   noInternetCard: {
     backgroundColor: "#fff",

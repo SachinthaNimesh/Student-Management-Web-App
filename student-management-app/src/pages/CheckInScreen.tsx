@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useLocation } from '../api/locationService';
@@ -22,6 +22,7 @@ const CheckInScreen: React.FC<Props> = ({ navigation }) => {
   const { latitude, longitude } = useLocation();
   const [showWelcome, setShowWelcome] = useState(true);
   const [showNoInternet, setShowNoInternet] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const timer = setTimeout(() => setShowWelcome(false), 2000);
@@ -71,9 +72,11 @@ const CheckInScreen: React.FC<Props> = ({ navigation }) => {
     return () => unsubscribe();
   }, [showNoInternet]);
 
-  const handleCheckIn = async () => {
+  const handleCheckIn = useCallback(async () => {
+    if (loading) return; // Prevent multiple check-ins
     try {
       setLoading(true);
+      setError(null);
 
       // Retry for up to 15 seconds if location is not available
       let retries = 0;
@@ -91,7 +94,8 @@ const CheckInScreen: React.FC<Props> = ({ navigation }) => {
 
       if (lat == null || lon == null) {
         setLoading(false);
-        return alert('Location data is not available. Please enable location services and try again.');
+        setError('Enable Location.');
+        return;
       }
 
       await postCheckIn(lat, lon);
@@ -110,12 +114,19 @@ const CheckInScreen: React.FC<Props> = ({ navigation }) => {
         setShowNoInternet(true);
       } else {
         console.error('An error occurred during check-in:', error);
-        alert(error instanceof Error ? error.message : 'An error occurred during check-in. Please try again.');
+        setError(error instanceof Error ? error.message : 'Error check-in. Try again.');
       }
     } finally {
       setLoading(false);
     }
-  };
+  }, [latitude, longitude, loading, navigation]);
+
+  useEffect(() => {
+    if (error) {
+      alert(error);
+      setError(null);
+    }
+  }, [error]);
 
   if (showNoInternet) {
     return (
@@ -123,7 +134,7 @@ const CheckInScreen: React.FC<Props> = ({ navigation }) => {
         {/* Fullscreen overlay card */}
         <View/>
         {/* Centered popup card */}
-        <View style={styles.noInternetCard}>
+        <View style={styles.noInternetCard} accessibilityRole="alert" accessibilityLabel="No Internet Connection">
           <Text style={styles.noInternetEmoji}>🛜</Text>
           <Text style={styles.noInternetTitle}>No Internet Connection</Text>
           <Text style={styles.noInternetMsg}>Turn Mobile Data or Wifi On 🛜</Text>
@@ -136,8 +147,7 @@ const CheckInScreen: React.FC<Props> = ({ navigation }) => {
   if (showWelcome) {
     return (
       <View style={[StyleSheet.absoluteFill, styles.container, { backgroundColor: '#667eea', zIndex: 999 }]}>
-       
-        <Text style={styles.welcomeText}>Welcome!</Text>
+        <Text style={styles.welcomeText} accessibilityRole="header">Welcome!</Text>
         <View style={{ marginTop: 30 }} />
         <View style={{
           width: 60,
@@ -156,7 +166,7 @@ const CheckInScreen: React.FC<Props> = ({ navigation }) => {
   return (
     <View style={styles.container}>
       <View style={styles.card}>
-        <Text style={styles.title}>Check In</Text>
+        <Text style={styles.title} accessibilityRole="header">Check In</Text>
         <View style={styles.locationInfo}>
           <View style={styles.infoRow}>
             <Text style={styles.icon}>🕐</Text>
@@ -173,6 +183,8 @@ const CheckInScreen: React.FC<Props> = ({ navigation }) => {
           style={[styles.checkinButton, loading && styles.buttonDisabled]}
           onPress={handleCheckIn}
           disabled={loading}
+          accessibilityRole="button"
+          accessibilityLabel="Check In"
         >
           <Text style={styles.buttonText}>
             {loading ? 'Loading...' : 'In'}
